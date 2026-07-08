@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none" role="img" aria-label="Foodcare">
+  <defs>
+    <linearGradient id="fc-bg" x1="4" y1="2" x2="36" y2="38" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34D399" />
+      <stop offset="1" stop-color="#047857" />
+    </linearGradient>
+    <linearGradient id="fc-leaf" x1="19" y1="19" x2="30" y2="31" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A7F3D0" />
+      <stop offset="1" stop-color="#6EE7B7" />
+    </linearGradient>
+  </defs>
+
+  <rect width="40" height="40" rx="11" fill="url(#fc-bg)" />
+
+  <path
+    d="M13 10.8C13 9.8 13.8 9 14.8 9H25.4C26.3 9 27 9.7 27 10.6C27 11.5 26.3 12.2 25.4 12.2H16.8V17H23.6C24.5 17 25.2 17.7 25.2 18.6C25.2 19.5 24.5 20.2 23.6 20.2H16.8V29.2C16.8 30.2 16 31 15 31C14 31 13.2 30.2 13.2 29.2L13 10.8Z"
+    fill="#FFFFFF"
+  />
+
+  <path
+    d="M22.5 20.8C24.7 19.8 27.4 20.6 28.7 22.7C30 24.8 29.5 27.6 27.5 29.1C25.7 30.4 23.3 30.7 21.2 30C20.7 29.8 20.4 29.3 20.4 28.8C20.5 25.9 20.9 22.4 22.5 20.8Z"
+    fill="url(#fc-leaf)"
+  />
+  <path
+    d="M22.9 21.3C22.1 23.4 21.8 25.9 21.7 28.3"
+    stroke="#047857"
+    stroke-width="0.9"
+    stroke-linecap="round"
+  />
+</svg>

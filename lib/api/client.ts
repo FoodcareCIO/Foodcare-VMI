@@ -30,11 +30,20 @@ async function request<T>(
   body?: unknown,
   options?: ApiRequestOptions,
 ): Promise<T> {
+  const isFormData = body instanceof FormData;
   const response = await fetch(path, {
     method,
     credentials: "include",
-    headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    headers:
+      body !== undefined && !isFormData
+        ? { "Content-Type": "application/json" }
+        : undefined,
+    body:
+      body === undefined
+        ? undefined
+        : isFormData
+          ? body
+          : JSON.stringify(body),
   });
 
   const payload = await parseBody(response);
@@ -58,6 +67,8 @@ export const api = {
   get: <T>(path: string, options?: ApiRequestOptions) =>
     request<T>("GET", path, undefined, options),
   post: <T>(path: string, body: unknown, options?: ApiRequestOptions) =>
+    request<T>("POST", path, body, options),
+  postForm: <T>(path: string, body: FormData, options?: ApiRequestOptions) =>
     request<T>("POST", path, body, options),
   put: <T>(path: string, body: unknown, options?: ApiRequestOptions) =>
     request<T>("PUT", path, body, options),

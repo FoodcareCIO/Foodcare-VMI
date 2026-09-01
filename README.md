@@ -8,7 +8,7 @@ It uses a **REST API layer** (`/app/api/*`) for all dashboard data. The browser 
 
 - **Overview** - live KPIs and recent orders.
 - **Customers & Sites** - CRUD for customers, sites, contacts, and site instructions.
-- **Products & Minimums** - product catalog CRUD; per-site minimums / order multiples on each site page.
+- **Products & Minimums** - product catalog CRUD; bulk Excel/CSV catalog imports; legacy Foodcare VMI workbook imports with automatic customer-site matching and per-site minimum updates.
 - **Reps & Assignments** - create sales-rep logins and control which customers each rep sees.
 - **VMI Orders** - view submitted stock counts + line items, download the Excel export, and reject completed counts.
 - **Admin Users** - manage who can sign in to this dashboard.

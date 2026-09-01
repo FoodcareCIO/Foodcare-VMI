@@ -144,6 +144,7 @@ interface EntityManagerProps {
   hiddenFields?: Record<string, string>;
   onMutate?: () => void | Promise<void>;
   refreshing?: boolean;
+  toolbarActions?: ReactNode;
   pagination?: {
     page: number;
     limit: number;
@@ -178,6 +179,7 @@ export const EntityManager = ({
   hiddenFields,
   onMutate,
   refreshing = false,
+  toolbarActions,
   pagination,
   sort,
   search,
@@ -200,13 +202,16 @@ export const EntityManager = ({
         ) : (
           <div />
         )}
-        <Button
-          variant="primary"
-          icon="mdi:plus"
-          onClick={() => setCreating(true)}
-        >
-          {createLabel}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {toolbarActions}
+          <Button
+            variant="primary"
+            icon="mdi:plus"
+            onClick={() => setCreating(true)}
+          >
+            {createLabel}
+          </Button>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">

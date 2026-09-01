@@ -9,6 +9,7 @@ import { LoadingPage, PageHeader, EmptyState } from "@/components/ui";
 import { usePaginatedQuery } from "@/lib/api/use-paginated-query";
 import type { PaginatedRowsResponse } from "@/lib/pagination";
 import { PRODUCT_DEFAULT_SORT } from "@/lib/sort-config";
+import { ProductImport } from "@/features/products/product-import";
 
 const fields: FieldDef[] = [
   { name: "sku", label: "Product code", required: true },
@@ -50,6 +51,7 @@ export default function ProductsPage() {
         emptyMessage="No products yet."
         onMutate={reload}
         refreshing={refreshing}
+        toolbarActions={<ProductImport onImported={reload} />}
         sort={{ column: sort, dir: sortDir, onChange: setSort }}
         search={{
           value: search,

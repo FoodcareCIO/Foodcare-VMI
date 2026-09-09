@@ -97,7 +97,12 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
     const [mounted, setMounted] = useState(false);
     const [open, setOpen] = useState(false);
     const [internalValue, setInternalValue] = useState(defaultValue);
-    const [menuStyle, setMenuStyle] = useState({ top: 0, left: 0, width: 0 });
+    const [menuStyle, setMenuStyle] = useState<{
+      top?: number;
+      bottom?: number;
+      left: number;
+      width: number;
+    }>({ top: 0, left: 0, width: 0 });
 
     const options = normalizeOptions(optionsInput);
     const isControlled = value !== undefined;
@@ -133,9 +138,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       const openUpward = menuHeight > spaceBelow && spaceAbove > spaceBelow;
 
       setMenuStyle({
-        top: openUpward
-          ? Math.max(gap, rect.top - menuHeight - gap)
-          : rect.bottom + gap,
+        top: openUpward ? undefined : rect.bottom + gap,
+        bottom: openUpward ? window.innerHeight - rect.top + gap : undefined,
         left: rect.left,
         width: rect.width,
       });
@@ -197,6 +201,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           style={{
             position: "fixed",
             top: menuStyle.top,
+            bottom: menuStyle.bottom,
             left: menuStyle.left,
             width: menuStyle.width,
             zIndex: 60,

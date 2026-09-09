@@ -5,6 +5,7 @@ import {
   type ColumnDef,
   type FieldDef,
 } from "@/components/entity-manager";
+import { RepChangePasswordButton } from "@/components/rep-change-password-button";
 import { LoadingPage, PageHeader, EmptyState } from "@/components/ui";
 import { usePaginatedQuery } from "@/lib/api/use-paginated-query";
 import type { PaginatedRowsResponse } from "@/lib/pagination";
@@ -58,6 +59,13 @@ export default function RepsPage() {
         createLabel="Add rep"
         emptyMessage="No reps yet."
         linkActions={[{ label: "Assignments", hrefTemplate: "/reps/:id" }]}
+        rowActions={(row) => (
+          <RepChangePasswordButton
+            repId={String(row.id)}
+            repName={String(row.display_name)}
+            repEmail={String(row.email)}
+          />
+        )}
         onMutate={reload}
         refreshing={refreshing}
         sort={{ column: sort, dir: sortDir, onChange: setSort }}

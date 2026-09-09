@@ -141,6 +141,7 @@ interface EntityManagerProps {
   createLabel?: string;
   emptyMessage?: string;
   linkActions?: LinkAction[];
+  rowActions?: (row: Row) => ReactNode;
   hiddenFields?: Record<string, string>;
   onMutate?: () => void | Promise<void>;
   refreshing?: boolean;
@@ -176,6 +177,7 @@ export const EntityManager = ({
   createLabel = "Add new",
   emptyMessage = "No records yet.",
   linkActions,
+  rowActions,
   hiddenFields,
   onMutate,
   refreshing = false,
@@ -187,7 +189,8 @@ export const EntityManager = ({
   const [creating, setCreating] = useState(false);
   const [editingRow, setEditingRow] = useState<Row | null>(null);
   const columnCount =
-    columns.length + (canUpdate || canDelete || linkActions?.length ? 1 : 0);
+    columns.length +
+    (canUpdate || canDelete || linkActions?.length || rowActions ? 1 : 0);
 
   return (
     <div>
@@ -240,7 +243,7 @@ export const EntityManager = ({
                   <TableHeaderCell key={col.key}>{col.label}</TableHeaderCell>
                 );
               })}
-              {(canUpdate || canDelete || linkActions?.length) && (
+              {(canUpdate || canDelete || linkActions?.length || rowActions) && (
                 <TableHeaderCell className="text-right">Actions</TableHeaderCell>
               )}
             </TableHead>
@@ -265,7 +268,7 @@ export const EntityManager = ({
                         <CellContent col={col} row={row} />
                       </td>
                     ))}
-                    {(canUpdate || canDelete || linkActions?.length) && (
+                    {(canUpdate || canDelete || linkActions?.length || rowActions) && (
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
                           {linkActions?.map((action) => (
@@ -277,6 +280,7 @@ export const EntityManager = ({
                               {action.label}
                             </Link>
                           ))}
+                          {rowActions?.(row)}
                           {canUpdate && (
                             <Button
                               variant="ghost"

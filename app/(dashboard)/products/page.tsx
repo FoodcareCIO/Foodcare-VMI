@@ -25,6 +25,13 @@ const columns: ColumnDef[] = [
   { key: "default_unit", label: "Unit" },
   { key: "pack_size", label: "Pack size" },
   { key: "pack_unit", label: "Pack unit" },
+  {
+    key: "assigned_sites",
+    label: "Assigned sites",
+    variant: "tags",
+    sortable: false,
+    emptyText: "Not assigned",
+  },
 ];
 
 export default function ProductsPage() {
@@ -39,7 +46,7 @@ export default function ProductsPage() {
   return (
     <div>
       <PageHeader
-        title="Products & Minimums"
+        title="Products"
         description="Add and edit products. Set minimum stock levels on each site page."
       />
       <EntityManager

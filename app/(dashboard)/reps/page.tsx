@@ -48,7 +48,7 @@ export default function RepsPage() {
   return (
     <div>
       <PageHeader
-        title="Reps & Assignments"
+        title="Reps"
         description="Create sales rep accounts and choose which sites each rep can manage."
       />
       <EntityManager
@@ -58,7 +58,13 @@ export default function RepsPage() {
         fields={fields}
         createLabel="Add rep"
         emptyMessage="No reps yet."
-        linkActions={[{ label: "Assignments", hrefTemplate: "/reps/:id" }]}
+        linkActions={[
+          {
+            label: "Assignments",
+            hrefTemplate: "/reps/:id",
+            icon: "mdi:link-variant",
+          },
+        ]}
         rowActions={(row) => (
           <RepChangePasswordButton
             repId={String(row.id)}

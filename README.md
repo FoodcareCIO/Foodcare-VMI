@@ -8,8 +8,8 @@ It uses a **REST API layer** (`/app/api/*`) for all dashboard data. The browser 
 
 - **Overview** - live KPIs and recent orders.
 - **Sites** - CRUD for sites, contacts, and site instructions.
-- **Products & Minimums** - product catalog CRUD; bulk Excel/CSV catalog imports; Foodcare VMI workbook imports with automatic site matching and per-site minimum updates.
-- **Reps & Assignments** - create sales-rep logins and control which sites each rep manages.
+- **Products** - product catalog CRUD; bulk Excel/CSV catalog imports; Foodcare VMI workbook imports with automatic site matching and per-site minimum updates.
+- **Reps** - create sales-rep logins and control which sites each rep manages.
 - **VMI Orders** - view submitted stock counts + line items, download the Excel export, and reject completed counts.
 - **Admin Users** - manage who can sign in to this dashboard.
 
@@ -45,7 +45,7 @@ It uses a **REST API layer** (`/app/api/*`) for all dashboard data. The browser 
    insert into public.admin_users (user_id, role)
    select id, 'admin'
    from auth.users
-   where email = 'you@foodcare.com'
+   where email = 'you@foodcare.com.au'
    on conflict (user_id) do update set deleted_at = null;
    ```
 

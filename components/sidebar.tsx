@@ -11,8 +11,8 @@ import { SignOutButton } from "./sign-out-button";
 const navItems = [
   { href: "/", label: "Overview", icon: "mdi:view-dashboard-outline" },
   { href: "/sites", label: "Sites", icon: "mdi:map-marker-outline" },
-  { href: "/products", label: "Products & Minimums", icon: "mdi:package-variant" },
-  { href: "/reps", label: "Reps & Assignments", icon: "mdi:account-group-outline" },
+  { href: "/products", label: "Products", icon: "mdi:package-variant" },
+  { href: "/reps", label: "Reps", icon: "mdi:account-group-outline" },
   { href: "/orders", label: "Orders", icon: "mdi:clipboard-list-outline" },
   { href: "/admins", label: "Dashboard access", icon: "mdi:shield-account-outline" },
 ];

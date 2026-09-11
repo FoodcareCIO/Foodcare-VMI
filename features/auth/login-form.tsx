@@ -82,7 +82,7 @@ export const LoginForm = () => {
           setEmail(event.target.value);
           clearFieldError("email");
         }}
-        placeholder="admin@foodcare.com"
+        placeholder="admin@foodcare.com.au"
         error={fieldErrors.email}
       />
       <Input

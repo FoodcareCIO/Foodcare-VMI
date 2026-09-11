@@ -41,6 +41,8 @@ export const PRODUCT_DEFAULT_SORT = "name";
 
 export const siteProductSortColumns: SortColumnDef[] = [
   { key: "product_id", column: "product_id" },
+  { key: "product_sku", column: "sku", foreignTable: "products" },
+  { key: "product_name", column: "name", foreignTable: "products" },
   { key: "minimum_quantity", column: "minimum_quantity" },
   { key: "unit_of_measure", column: "unit_of_measure" },
   { key: "order_multiple", column: "order_multiple" },

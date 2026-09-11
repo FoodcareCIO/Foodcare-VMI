@@ -29,7 +29,13 @@ export default function SitesPage() {
         fields={fields}
         createLabel="Add site"
         emptyMessage="No sites yet."
-        linkActions={[{ label: "Manage", hrefTemplate: "/sites/:id" }]}
+        linkActions={[
+          {
+            label: "Manage",
+            hrefTemplate: "/sites/:id",
+            icon: "mdi:cog-outline",
+          },
+        ]}
         onMutate={query.reload}
         refreshing={query.refreshing}
         sort={{ column: query.sort, dir: query.sortDir, onChange: query.setSort }}

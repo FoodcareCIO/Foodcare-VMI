@@ -84,7 +84,7 @@ export const RepChangePasswordButton = ({
   return (
     <>
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
         icon="mdi:lock-reset"
         title={`Change password for ${repName}`}

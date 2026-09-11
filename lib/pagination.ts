@@ -38,10 +38,6 @@ export type PaginatedOrdersResponse = PaginationMeta & {
   orders: Record<string, unknown>[];
 };
 
-export type PaginatedDevicesResponse = PaginationMeta & {
-  devices: Record<string, unknown>[];
-};
-
 export type PaginatedSitesResponse = PaginationMeta & {
   sites: { id: string; name: string; address: string; assigned: boolean }[];
 };

@@ -51,13 +51,6 @@ export const orderSearch: SearchConfig = {
   ],
 };
 
-export const deviceSearch: SearchConfig = {
-  columns: ["name", "platform"],
-  relations: [
-    { table: "users", fkColumn: "user_id", columns: ["display_name", "email"] },
-  ],
-};
-
 export const assignmentSearch: SearchConfig = {
   columns: ["name", "address"],
 };

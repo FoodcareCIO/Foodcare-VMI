@@ -73,16 +73,6 @@ export const orderSortColumns: SortColumnDef[] = [
 export const ORDER_DEFAULT_SORT = "started_at";
 export const ORDER_DEFAULT_DIR = "desc" as const;
 
-export const deviceSortColumns: SortColumnDef[] = [
-  { key: "name", column: "name" },
-  { key: "platform", column: "platform" },
-  { key: "rep", column: "display_name", foreignTable: "users" },
-  { key: "last_seen_at", column: "last_seen_at" },
-  { key: "status", column: "revoked_at" },
-];
-export const DEVICE_DEFAULT_SORT = "last_seen_at";
-export const DEVICE_DEFAULT_DIR = "desc" as const;
-
 export const assignmentSortColumns: SortColumnDef[] = [
   { key: "name", column: "name" },
 ];

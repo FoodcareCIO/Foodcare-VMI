@@ -14,7 +14,6 @@ import {
   assignmentSearch,
   contactSearch,
   customerSearch,
-  deviceSearch,
   instructionSearch,
   orderSearch,
   productSearch,
@@ -965,37 +964,3 @@ export async function deleteAdmin(
   return { ok: true };
 }
 
-export async function listDevices(
-  db: SupabaseClient,
-  pagination: PaginationInput,
-  sort: SortInput,
-  search?: string,
-) {
-  const { from, to } = paginationRange(pagination);
-  const searchFilter = await buildSearchFilter(db, search, deviceSearch);
-  let query = db
-    .from("devices")
-    .select("id,name,platform,last_seen_at,revoked_at,users(display_name,email)", {
-      count: "exact",
-    });
-  if (searchFilter) query = query.or(searchFilter);
-  const { data, error, count } = await applyOrder(query, sort).range(from, to);
-  if (error) throw new Error(error.message);
-  return {
-    devices: data ?? [],
-    ...paginatedMeta(pagination.page, pagination.limit, count ?? 0),
-  };
-}
-
-export async function setDeviceRevoked(
-  db: SupabaseClient,
-  id: string,
-  revoked: boolean,
-) {
-  const { error } = await db
-    .from("devices")
-    .update({ revoked_at: revoked ? nowIso() : null })
-    .eq("id", id);
-  if (error) throw new Error(error.message);
-  return { ok: true };
-}

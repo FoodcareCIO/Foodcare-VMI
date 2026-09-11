@@ -57,8 +57,7 @@ async function countRows(
 }
 
 export async function getOverview(db: SupabaseClient) {
-  const [customers, sites, products, reps] = await Promise.all([
-    countRows(db, "customers"),
+  const [sites, products, reps] = await Promise.all([
     countRows(db, "customer_sites"),
     countRows(db, "products"),
     countRows(db, "sales_reps"),
@@ -96,7 +95,7 @@ export async function getOverview(db: SupabaseClient) {
   const { data: recent } = await db
     .from("stock_counts")
     .select(
-      "id,status,started_at,completed_at,customers(name),customer_sites(name)",
+      "id,status,started_at,completed_at,customer_sites(name)",
     )
     .is("deleted_at", null)
     .order("started_at", { ascending: false })
@@ -104,7 +103,6 @@ export async function getOverview(db: SupabaseClient) {
 
   return {
     metrics: {
-      customers,
       sites,
       products,
       reps,
@@ -191,18 +189,18 @@ export async function getCustomer(db: SupabaseClient, id: string) {
 
 export async function listSites(
   db: SupabaseClient,
-  customerId: string,
   pagination: PaginationInput,
   sort: SortInput,
   search?: string,
+  customerId?: string,
 ) {
   const { from, to } = paginationRange(pagination);
   const searchFilter = await buildSearchFilter(db, search, siteSearch);
   let query = db
     .from("customer_sites")
     .select("*", { count: "exact" })
-    .eq("customer_id", customerId)
     .is("deleted_at", null);
+  if (customerId) query = query.eq("customer_id", customerId);
   if (searchFilter) query = query.or(searchFilter);
   const { data, error, count } = await applyOrder(query, sort).range(from, to);
   if (error) throw new Error(error.message);
@@ -214,15 +212,13 @@ export async function listSites(
 
 export async function createSite(
   db: SupabaseClient,
-  body: { customer_id?: string; name?: string; address?: string },
+  body: { name?: string; address?: string },
 ) {
-  if (!body.customer_id) throw new Error("Missing customer.");
   if (!body.name?.trim()) throw new Error("Site name is required.");
   if (!body.address?.trim()) throw new Error("Address is required.");
-  const { error } = await db.from("customer_sites").insert({
-    customer_id: body.customer_id,
-    name: body.name.trim(),
-    address: body.address.trim(),
+  const { error } = await db.rpc("create_site_with_legacy_owner", {
+    p_name: body.name.trim(),
+    p_address: body.address.trim(),
   });
   if (error) throw new Error(error.message);
   return { ok: true };
@@ -269,23 +265,35 @@ export async function getSite(db: SupabaseClient, id: string) {
 
 export async function listContacts(
   db: SupabaseClient,
-  customerId: string,
+  siteId: string,
   pagination: PaginationInput,
   sort: SortInput,
   search?: string,
 ) {
   const { from, to } = paginationRange(pagination);
   const searchFilter = await buildSearchFilter(db, search, contactSearch);
+  const { data: site, error: siteError } = await db
+    .from("customer_sites")
+    .select("customer_id")
+    .eq("id", siteId)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (siteError) throw new Error(siteError.message);
+  if (!site) throw new Error("Site not found.");
   let query = db
     .from("customer_contacts")
-    .select("*, customer_sites(name)", { count: "exact" })
-    .eq("customer_id", customerId)
+    .select("*", { count: "exact" })
+    .eq("customer_id", site.customer_id)
+    .or(`site_id.eq.${siteId},site_id.is.null`)
     .is("deleted_at", null);
   if (searchFilter) query = query.or(searchFilter);
   const { data, error, count } = await applyOrder(query, sort).range(from, to);
   if (error) throw new Error(error.message);
   return {
-    rows: data ?? [],
+    rows: (data ?? []).map((contact) => ({
+      ...contact,
+      scope: contact.site_id ? "This site" : "Shared legacy contact",
+    })),
     ...paginatedMeta(pagination.page, pagination.limit, count ?? 0),
   };
 }
@@ -294,11 +302,19 @@ export async function createContact(
   db: SupabaseClient,
   body: Record<string, unknown>,
 ) {
-  if (!body.customer_id) throw new Error("Missing customer.");
+  if (!body.site_id) throw new Error("Missing site.");
   if (!String(body.name ?? "").trim()) throw new Error("Contact name is required.");
+  const { data: site, error: siteError } = await db
+    .from("customer_sites")
+    .select("customer_id")
+    .eq("id", String(body.site_id))
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (siteError) throw new Error(siteError.message);
+  if (!site) throw new Error("Site not found.");
   const { error } = await db.from("customer_contacts").insert({
-    customer_id: body.customer_id,
-    site_id: body.site_id || null,
+    customer_id: site.customer_id,
+    site_id: body.site_id,
     name: String(body.name).trim(),
     phone: body.phone || null,
     email: body.email || null,
@@ -317,7 +333,6 @@ export async function updateContact(
   const { error } = await db
     .from("customer_contacts")
     .update({
-      site_id: body.site_id || null,
       name: String(body.name).trim(),
       phone: body.phone || null,
       email: body.email || null,
@@ -707,27 +722,27 @@ export async function getRepAssignments(
 ) {
   const { from, to } = paginationRange(pagination);
   const searchFilter = await buildSearchFilter(db, search, assignmentSearch);
-  let customersQuery = db
-    .from("customers")
+  let sitesQuery = db
+    .from("customer_sites")
     .select("*", { count: "exact" })
     .is("deleted_at", null);
-  if (searchFilter) customersQuery = customersQuery.or(searchFilter);
-  const [{ data: customers, error: cErr, count }, { data: assignments, error: aErr }] =
+  if (searchFilter) sitesQuery = sitesQuery.or(searchFilter);
+  const [{ data: sites, error: siteError, count }, { data: assignments, error: assignmentError }] =
     await Promise.all([
-      applyOrder(customersQuery, sort).range(from, to),
+      applyOrder(sitesQuery, sort).range(from, to),
       db
-        .from("sales_rep_customer_assignments")
-        .select("customer_id")
+        .from("sales_rep_site_assignments")
+        .select("site_id")
         .eq("sales_rep_id", repId)
         .is("deleted_at", null),
     ]);
-  if (cErr) throw new Error(cErr.message);
-  if (aErr) throw new Error(aErr.message);
-  const assignedIds = new Set((assignments ?? []).map((a) => a.customer_id));
+  if (siteError) throw new Error(siteError.message);
+  if (assignmentError) throw new Error(assignmentError.message);
+  const assignedIds = new Set((assignments ?? []).map((assignment) => assignment.site_id));
   return {
-    customers: (customers ?? []).map((c) => ({
-      ...c,
-      assigned: assignedIds.has(c.id),
+    sites: (sites ?? []).map((site) => ({
+      ...site,
+      assigned: assignedIds.has(site.id),
     })),
     ...paginatedMeta(pagination.page, pagination.limit, count ?? 0),
   };
@@ -736,32 +751,32 @@ export async function getRepAssignments(
 export async function setRepAssignment(
   db: SupabaseClient,
   repId: string,
-  customerId: string,
+  siteId: string,
   assigned: boolean,
 ) {
   const { data: existing } = await db
-    .from("sales_rep_customer_assignments")
+    .from("sales_rep_site_assignments")
     .select("id")
     .eq("sales_rep_id", repId)
-    .eq("customer_id", customerId)
+    .eq("site_id", siteId)
     .maybeSingle();
 
   if (assigned) {
     if (existing) {
       const { error } = await db
-        .from("sales_rep_customer_assignments")
+        .from("sales_rep_site_assignments")
         .update({ deleted_at: null })
         .eq("id", existing.id);
       if (error) throw new Error(error.message);
     } else {
       const { error } = await db
-        .from("sales_rep_customer_assignments")
-        .insert({ sales_rep_id: repId, customer_id: customerId });
+        .from("sales_rep_site_assignments")
+        .insert({ sales_rep_id: repId, site_id: siteId });
       if (error) throw new Error(error.message);
     }
   } else if (existing) {
     const { error } = await db
-      .from("sales_rep_customer_assignments")
+      .from("sales_rep_site_assignments")
       .update({ deleted_at: nowIso() })
       .eq("id", existing.id);
     if (error) throw new Error(error.message);
@@ -780,7 +795,7 @@ export async function listOrders(
   let query = db
     .from("stock_counts")
     .select(
-      "id,status,started_at,completed_at,customers(name),customer_sites(name),sales_reps(users(display_name)),stock_count_exports(file_name,email_status,generated_status)",
+      "id,status,started_at,completed_at,customer_sites(name),sales_reps(users(display_name)),stock_count_exports(file_name,email_status,generated_status)",
       { count: "exact" },
     )
     .is("deleted_at", null);
@@ -797,7 +812,7 @@ export async function getOrder(db: SupabaseClient, id: string) {
   const { data, error } = await db
     .from("stock_counts")
     .select(
-      "*,customers(name),customer_sites(name,address),sales_reps(users(display_name,email)),stock_count_items(*),stock_count_exports(*)",
+      "*,customer_sites(name,address),sales_reps(users(display_name,email)),stock_count_items(*),stock_count_exports(*)",
     )
     .eq("id", id)
     .maybeSingle();

@@ -64,7 +64,6 @@ export const adminSortColumns: SortColumnDef[] = [
 export const ADMIN_DEFAULT_SORT = "display_name";
 
 export const orderSortColumns: SortColumnDef[] = [
-  { key: "customer", column: "name", foreignTable: "customers" },
   { key: "site", column: "name", foreignTable: "customer_sites" },
   { key: "status", column: "status" },
   { key: "date", column: "started_at" },

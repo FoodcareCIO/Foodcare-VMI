@@ -7,14 +7,14 @@ import { api } from "@/lib/api/client";
 
 export const AssignmentRow = ({
   repId,
-  customerId,
-  customerName,
+  siteId,
+  siteName,
   assigned,
   onMutate,
 }: {
   repId: string;
-  customerId: string;
-  customerName: string;
+  siteId: string;
+  siteName: string;
   assigned: boolean;
   onMutate?: () => void | Promise<void>;
 }) => {
@@ -24,7 +24,7 @@ export const AssignmentRow = ({
     setBusy(true);
     try {
       await api.put(`/api/reps/${repId}/assignments`, {
-        customer_id: customerId,
+        site_id: siteId,
         assigned: !assigned,
       });
       await onMutate?.();
@@ -37,7 +37,7 @@ export const AssignmentRow = ({
 
   return (
     <li className="flex items-center justify-between border-b border-slate-100 px-4 py-3 last:border-0">
-      <span className="text-base text-slate-700">{customerName}</span>
+      <span className="text-base text-slate-700">{siteName}</span>
       <Button
         variant={assigned ? "outline" : "primary"}
         size="sm"

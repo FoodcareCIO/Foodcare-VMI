@@ -37,7 +37,7 @@ interface ParsedProduct {
 
 interface ParsedImport {
   format: ProductImportFormat;
-  customerName: string | null;
+  siteName: string | null;
   address: string | null;
   totalRows: number;
   products: ParsedProduct[];
@@ -252,16 +252,16 @@ async function parseProductFile(file: File): Promise<ParsedImport> {
     }
   }
 
-  let customerName: string | null = null;
+  let siteName: string | null = null;
   let address: string | null = null;
   if (format === "vmi") {
     for (const row of rows.slice(0, headerRowIndex)) {
-      if (normalizeMatch(cellText(row[0])) === "name" && cellText(row[1])) customerName = cellText(row[1]);
+      if (normalizeMatch(cellText(row[0])) === "name" && cellText(row[1])) siteName = cellText(row[1]);
       const candidate = cellText(row[1]);
       if (/\bNSW\b/i.test(candidate) && /\d{4}/.test(candidate)) address = candidate;
     }
-    if (!customerName) {
-      errors.push({ row: 1, message: "The VMI workbook is missing its customer Name value." });
+    if (!siteName) {
+      errors.push({ row: 1, message: "The VMI workbook is missing its site Name value." });
       invalidRows.add(1);
     }
   }
@@ -343,7 +343,7 @@ async function parseProductFile(file: File): Promise<ParsedImport> {
   }
   return {
     format,
-    customerName,
+    siteName,
     address,
     totalRows: candidates.length,
     products: candidates.filter((product) => !invalidRows.has(product.row)),
@@ -391,15 +391,11 @@ async function findImportSite(db: SupabaseClient, parsed: ParsedImport): Promise
   if (parsed.format !== "vmi") return null;
   const { data, error } = await db
     .from("customer_sites")
-    .select("id,name,address,customers(name)")
+    .select("id,name,address")
     .is("deleted_at", null);
   if (error) throw new Error(error.message);
-  const expectedCustomer = normalizeMatch(parsed.customerName);
-  const candidates = (data ?? []).filter((row) => {
-    const joined = row.customers as { name?: string } | { name?: string }[] | null;
-    const customer = Array.isArray(joined) ? joined[0] : joined;
-    return normalizeMatch(customer?.name) === expectedCustomer;
-  });
+  const expectedSite = normalizeMatch(parsed.siteName);
+  const candidates = (data ?? []).filter((row) => normalizeMatch(row.name) === expectedSite);
   const addressMatch = parsed.address
     ? candidates.find((row) => normalizeMatch(row.address) === normalizeMatch(parsed.address))
     : undefined;
@@ -407,15 +403,12 @@ async function findImportSite(db: SupabaseClient, parsed: ParsedImport): Promise
   if (!match) {
     throw new Error(
       candidates.length > 1
-        ? `More than one site matches ${parsed.customerName}; its workbook address did not match exactly.`
-        : `No active customer site matches the workbook name ${parsed.customerName}.`,
+        ? `More than one site matches ${parsed.siteName}; its workbook address did not match exactly.`
+        : `No active site matches the workbook name ${parsed.siteName}.`,
     );
   }
-  const joined = match.customers as { name?: string } | { name?: string }[] | null;
-  const customer = Array.isArray(joined) ? joined[0] : joined;
   return {
     id: String(match.id),
-    customerName: customer?.name ?? parsed.customerName ?? "Unknown customer",
     siteName: String(match.name),
     address: String(match.address ?? ""),
   };

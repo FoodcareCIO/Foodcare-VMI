@@ -13,14 +13,14 @@ import {
 
 export async function GET(request: Request) {
   return withAdmin(async ({ db, request: req }) => {
-    const customerId = new URL(req.url).searchParams.get("customer_id");
-    if (!customerId) throw new Error("customer_id is required.");
+    const siteId = new URL(req.url).searchParams.get("site_id");
+    if (!siteId) throw new Error("site_id is required.");
     const pagination = parsePagination(req);
     const sort = parseSort(req, {
       columns: contactSortColumns,
       defaultColumn: CONTACT_DEFAULT_SORT,
     });
-    return jsonOk(await listContacts(db, customerId, pagination, sort, parseSearch(req)));
+    return jsonOk(await listContacts(db, siteId, pagination, sort, parseSearch(req)));
   }, request);
 }
 

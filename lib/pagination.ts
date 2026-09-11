@@ -42,8 +42,8 @@ export type PaginatedDevicesResponse = PaginationMeta & {
   devices: Record<string, unknown>[];
 };
 
-export type PaginatedCustomersResponse = PaginationMeta & {
-  customers: { id: string; name: string; assigned: boolean }[];
+export type PaginatedSitesResponse = PaginationMeta & {
+  sites: { id: string; name: string; address: string; assigned: boolean }[];
 };
 
 export function parsePagination(

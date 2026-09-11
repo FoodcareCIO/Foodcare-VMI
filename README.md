@@ -2,14 +2,14 @@
 
 Admin control plane for the Foodcare VMI mobile (Expo) app. Built with Next.js 16 (App Router), React 19, Tailwind v4, and Supabase.
 
-It uses a **REST API layer** (`/app/api/*`) for all dashboard data. The browser fetches JSON from those routes with `credentials: "include"`; route handlers verify the admin session and call Supabase with the service-role key. Master-data edits (customers, sites, products, minimums, assignments) automatically sync to the tablets via existing database triggers (`sync_change_log`).
+It uses a **REST API layer** (`/app/api/*`) for all dashboard data. The browser fetches JSON from those routes with `credentials: "include"`; route handlers verify the admin session and call Supabase with the service-role key. Master-data edits (sites, products, minimums, assignments) automatically sync to the tablets via database triggers (`sync_change_log`).
 
 ## Features
 
 - **Overview** - live KPIs and recent orders.
-- **Customers & Sites** - CRUD for customers, sites, contacts, and site instructions.
-- **Products & Minimums** - product catalog CRUD; bulk Excel/CSV catalog imports; legacy Foodcare VMI workbook imports with automatic customer-site matching and per-site minimum updates.
-- **Reps & Assignments** - create sales-rep logins and control which customers each rep sees.
+- **Sites** - CRUD for sites, contacts, and site instructions.
+- **Products & Minimums** - product catalog CRUD; bulk Excel/CSV catalog imports; Foodcare VMI workbook imports with automatic site matching and per-site minimum updates.
+- **Reps & Assignments** - create sales-rep logins and control which sites each rep manages.
 - **VMI Orders** - view submitted stock counts + line items, download the Excel export, and reject completed counts.
 - **Admin Users** - manage who can sign in to this dashboard.
 - **Devices** - view registered tablets and revoke them.

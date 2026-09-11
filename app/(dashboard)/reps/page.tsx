@@ -49,7 +49,7 @@ export default function RepsPage() {
     <div>
       <PageHeader
         title="Reps & Assignments"
-        description="Create sales rep accounts and choose which customers each rep can see."
+        description="Create sales rep accounts and choose which sites each rep can manage."
       />
       <EntityManager
         apiBase="/api/reps"

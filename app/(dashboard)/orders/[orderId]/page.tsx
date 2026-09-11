@@ -66,7 +66,6 @@ export default function OrderDetailPage({
   }
 
   const order = data.order;
-  const customers = order.customers as { name?: string } | null;
   const sites = order.customer_sites as { name?: string; address?: string } | null;
   const reps = order.sales_reps as {
     users?: { display_name?: string } | null;
@@ -82,7 +81,7 @@ export default function OrderDetailPage({
   return (
     <div>
       <PageHeader
-        title={`${customers?.name ?? "Order"} - ${sites?.name ?? ""}`}
+        title={sites?.name ?? "Order"}
         description={sites?.address}
         actions={
           <Link

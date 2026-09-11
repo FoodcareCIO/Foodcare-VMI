@@ -159,18 +159,15 @@ export const OrderStatusChart = ({
 };
 
 export const CatalogBars = ({
-  customers,
   sites,
   products,
   reps,
 }: {
-  customers: number;
   sites: number;
   products: number;
   reps: number;
 }) => {
   const items = [
-    { label: "Customers", value: customers, icon: "mdi:office-building-outline", color: "bg-emerald-500" },
     { label: "Sites", value: sites, icon: "mdi:map-marker-outline", color: "bg-sky-500" },
     { label: "Products", value: products, icon: "mdi:package-variant", color: "bg-violet-500" },
     { label: "Sales reps", value: reps, icon: "mdi:account-group-outline", color: "bg-amber-500" },

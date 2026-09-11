@@ -19,19 +19,21 @@ import {
 } from "@/components/ui";
 import { api } from "@/lib/api/client";
 import { usePaginatedQuery } from "@/lib/api/use-paginated-query";
-import type { PaginatedCustomersResponse } from "@/lib/pagination";
+import type { PaginatedSitesResponse } from "@/lib/pagination";
 import { ASSIGNMENT_DEFAULT_SORT } from "@/lib/sort-config";
 
 function AssignmentTableRow({
   repId,
-  customerId,
-  customerName,
+  siteId,
+  siteName,
+  address,
   assigned,
   onMutate,
 }: {
   repId: string;
-  customerId: string;
-  customerName: string;
+  siteId: string;
+  siteName: string;
+  address: string;
   assigned: boolean;
   onMutate?: () => void | Promise<void>;
 }) {
@@ -41,7 +43,7 @@ function AssignmentTableRow({
     setBusy(true);
     try {
       await api.put(`/api/reps/${repId}/assignments`, {
-        customer_id: customerId,
+        site_id: siteId,
         assigned: !assigned,
       });
       await onMutate?.();
@@ -54,7 +56,8 @@ function AssignmentTableRow({
 
   return (
     <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-      <td className="px-4 py-3 text-slate-700">{customerName}</td>
+      <td className="px-4 py-3 text-slate-700">{siteName}</td>
+      <td className="px-4 py-3 text-slate-500">{address}</td>
       <td className="px-4 py-3 text-right">
         <Button
           variant={assigned ? "outline" : "primary"}
@@ -89,7 +92,7 @@ export default function RepAssignmentsPage({
     setSort,
     search,
     setSearch,
-  } = usePaginatedQuery<PaginatedCustomersResponse>(`/api/reps/${repId}/assignments`, {
+  } = usePaginatedQuery<PaginatedSitesResponse>(`/api/reps/${repId}/assignments`, {
     defaultSort: ASSIGNMENT_DEFAULT_SORT,
   });
 
@@ -100,7 +103,7 @@ export default function RepAssignmentsPage({
     <div>
       <PageHeader
         title="Rep assignments"
-        description="Choose which customers this rep can work with."
+        description="Choose which sites this rep can manage."
         actions={
           <Link
             href="/reps"
@@ -114,7 +117,7 @@ export default function RepAssignmentsPage({
         <TableSearch
           value={search}
           onChange={setSearch}
-          placeholder="Search customers..."
+          placeholder="Search sites..."
           disabled={refreshing}
         />
       </div>
@@ -128,25 +131,27 @@ export default function RepAssignmentsPage({
                 activeDir={sortDir}
                 onSort={setSort}
               >
-                Customer
+                Site
               </SortableTableHeaderCell>
+              <TableHeaderCell>Address</TableHeaderCell>
               <TableHeaderCell className="text-right">Assigned</TableHeaderCell>
             </TableHead>
             <tbody>
-              {!data?.customers.length ? (
+              {!data?.sites.length ? (
                 <tr>
-                  <td colSpan={2} className="px-6 py-12 text-center text-base text-slate-400">
-                    No customers to assign.
+                  <td colSpan={3} className="px-6 py-12 text-center text-base text-slate-400">
+                    No sites to assign.
                   </td>
                 </tr>
               ) : (
-                data.customers.map((customer) => (
+                data.sites.map((site) => (
                   <AssignmentTableRow
-                    key={customer.id}
+                    key={site.id}
                     repId={repId}
-                    customerId={customer.id}
-                    customerName={customer.name}
-                    assigned={customer.assigned}
+                    siteId={site.id}
+                    siteName={site.name}
+                    address={site.address}
+                    assigned={site.assigned}
                     onMutate={reload}
                   />
                 ))

@@ -27,10 +27,10 @@ export async function PUT(
 ) {
   const { repId } = await params;
   return withAdmin(async ({ db, request: req }) => {
-    const body = await parseJson<{ customer_id?: string; assigned?: boolean }>(req);
-    if (!body.customer_id) throw new Error("customer_id is required.");
+    const body = await parseJson<{ site_id?: string; assigned?: boolean }>(req);
+    if (!body.site_id) throw new Error("site_id is required.");
     return jsonOk(
-      await setRepAssignment(db, repId, body.customer_id, Boolean(body.assigned)),
+      await setRepAssignment(db, repId, body.site_id, Boolean(body.assigned)),
     );
   }, request);
 }

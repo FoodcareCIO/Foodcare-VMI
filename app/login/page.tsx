@@ -15,7 +15,7 @@ export default function LoginPage() {
           <h1 className="text-2xl tracking-tight text-white">Foodcare Admin</h1>
         </div>
         <p className="mb-6 text-center text-sm font-normal leading-relaxed tracking-normal text-slate-400">
-          Sign in to manage customers, products, sales reps, and orders from the field.
+          Sign in to manage sites, products, sales reps, and orders from the field.
         </p>
         <LoginForm />
       </div>

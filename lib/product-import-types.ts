@@ -3,7 +3,6 @@ export type ProductImportFormat = "catalog" | "vmi";
 
 export interface ProductImportSite {
   id: string;
-  customerName: string;
   siteName: string;
   address: string;
 }

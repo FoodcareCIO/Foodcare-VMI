@@ -10,7 +10,7 @@ import { SignOutButton } from "./sign-out-button";
 
 const navItems = [
   { href: "/", label: "Overview", icon: "mdi:view-dashboard-outline" },
-  { href: "/customers", label: "Customers & Sites", icon: "mdi:office-building-outline" },
+  { href: "/sites", label: "Sites", icon: "mdi:map-marker-outline" },
   { href: "/products", label: "Products & Minimums", icon: "mdi:package-variant" },
   { href: "/reps", label: "Reps & Assignments", icon: "mdi:account-group-outline" },
   { href: "/orders", label: "Orders", icon: "mdi:clipboard-list-outline" },

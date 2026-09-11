@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Foodcare Admin",
-  description: "Manage customers, products, sales reps, and field orders",
+  description: "Manage sites, products, sales reps, and field orders",
 };
 
 export default function RootLayout({

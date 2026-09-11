@@ -27,7 +27,6 @@ import { useApiQuery } from "@/lib/api/use-query";
 
 interface OverviewData {
   metrics: {
-    customers: number;
     sites: number;
     products: number;
     reps: number;
@@ -45,7 +44,6 @@ interface OverviewData {
     status: string;
     started_at: string;
     completed_at: string | null;
-    customers: { name: string } | null;
     customer_sites: { name: string } | null;
   }[];
 }
@@ -62,7 +60,6 @@ export default function OverviewPage() {
   const recent = data?.recent ?? [];
   const recentAccessors = useMemo(
     () => ({
-      customer: (order: OverviewData["recent"][number]) => order.customers?.name ?? "",
       site: (order: OverviewData["recent"][number]) => order.customer_sites?.name ?? "",
       status: (order: OverviewData["recent"][number]) => order.status,
       date: (order: OverviewData["recent"][number]) =>
@@ -127,19 +124,12 @@ export default function OverviewPage() {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <OverviewStatCard
-          label="Customers"
-          value={metrics.customers}
-          icon="mdi:office-building-outline"
-          href="/customers"
-          accent="emerald"
-        />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <OverviewStatCard
           label="Sites"
           value={metrics.sites}
           icon="mdi:map-marker-outline"
-          href="/customers"
+          href="/sites"
           accent="sky"
         />
         <OverviewStatCard
@@ -173,7 +163,6 @@ export default function OverviewPage() {
             <h2 className="text-lg text-slate-900">Your business at a glance</h2>
           </div>
           <CatalogBars
-            customers={metrics.customers}
             sites={metrics.sites}
             products={metrics.products}
             reps={metrics.reps}
@@ -187,10 +176,10 @@ export default function OverviewPage() {
           </div>
           <div className="space-y-3">
             <QuickAction
-              href="/customers"
+              href="/sites"
               icon="mdi:plus-circle-outline"
-              label="Manage customers"
-              description="Sites, contacts, and instructions"
+              label="Manage sites"
+              description="Contacts, instructions, and products"
             />
             <QuickAction
               href="/orders"
@@ -202,7 +191,7 @@ export default function OverviewPage() {
               href="/reps"
               icon="mdi:link-variant"
               label="Rep assignments"
-              description="Choose which customers each rep can see"
+              description="Choose which sites each rep can manage"
             />
           </div>
         </Card>
@@ -265,14 +254,6 @@ export default function OverviewPage() {
             <Table>
               <TableHead>
                 <SortableTableHeaderCell
-                  sortKey="customer"
-                  activeSort={sort}
-                  activeDir={sortDir}
-                  onSort={setSort}
-                >
-                  Customer
-                </SortableTableHeaderCell>
-                <SortableTableHeaderCell
                   sortKey="site"
                   activeSort={sort}
                   activeDir={sortDir}
@@ -305,17 +286,6 @@ export default function OverviewPage() {
                     className="border-b border-slate-100 last:border-0 transition hover:bg-slate-50"
                   >
                     <td className="px-4 py-3 font-medium text-slate-800">
-                      <span className="inline-flex items-center gap-2">
-                        <Icon
-                          icon="mdi:office-building-outline"
-                          width={16}
-                          height={16}
-                          className="text-slate-400"
-                        />
-                        {order.customers?.name ?? "-"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
                       {order.customer_sites?.name ?? "-"}
                     </td>
                     <td className="px-4 py-3">

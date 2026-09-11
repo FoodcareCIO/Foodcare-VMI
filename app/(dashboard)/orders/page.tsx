@@ -66,14 +66,6 @@ export default function OrdersPage() {
           <Table>
             <TableHead>
               <SortableTableHeaderCell
-                sortKey="customer"
-                activeSort={sort}
-                activeDir={sortDir}
-                onSort={setSort}
-              >
-                Customer
-              </SortableTableHeaderCell>
-              <SortableTableHeaderCell
                 sortKey="site"
                 activeSort={sort}
                 activeDir={sortDir}
@@ -103,13 +95,12 @@ export default function OrdersPage() {
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-base text-slate-400">
+                  <td colSpan={5} className="px-6 py-12 text-center text-base text-slate-400">
                     No orders yet.
                   </td>
                 </tr>
               ) : (
                 orders.map((order) => {
-                  const customers = order.customers as { name?: string } | null;
                   const sites = order.customer_sites as { name?: string } | null;
                   const reps = order.sales_reps as {
                     users?: { display_name?: string } | null;
@@ -119,10 +110,7 @@ export default function OrdersPage() {
                       key={String(order.id)}
                       className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
                     >
-                      <td className="px-4 py-3 font-medium text-slate-800">
-                        {customers?.name ?? "-"}
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">{sites?.name ?? "-"}</td>
+                      <td className="px-4 py-3 font-medium text-slate-800">{sites?.name ?? "-"}</td>
                       <td className="px-4 py-3 text-slate-600">
                         {reps?.users?.display_name ?? "-"}
                       </td>

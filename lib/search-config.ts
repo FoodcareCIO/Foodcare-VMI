@@ -47,7 +47,6 @@ export const adminSearch: SearchConfig = {
 export const orderSearch: SearchConfig = {
   columns: ["status"],
   relations: [
-    { table: "customers", fkColumn: "customer_id", columns: ["name"] },
     { table: "customer_sites", fkColumn: "site_id", columns: ["name"] },
   ],
 };
@@ -60,5 +59,5 @@ export const deviceSearch: SearchConfig = {
 };
 
 export const assignmentSearch: SearchConfig = {
-  columns: ["name", "account_code"],
+  columns: ["name", "address"],
 };

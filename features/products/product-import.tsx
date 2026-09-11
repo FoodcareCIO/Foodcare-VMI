@@ -131,7 +131,7 @@ export function ProductImport({ onImported }: { onImported: () => void | Promise
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-600">
               <p>
                 Upload a product catalog or an existing Foodcare VMI sheet in <strong>.xlsx</strong> or <strong>.csv</strong> format.
-                VMI sheets also update minimum stock for the customer site identified inside the workbook.
+                VMI sheets also update minimum stock for the site identified inside the workbook.
                 Existing product codes are updated; missing products are left unchanged.
               </p>
               <Button variant="ghost" size="sm" icon="mdi:download" className="mt-2 -ml-2" onClick={downloadTemplate}>
@@ -266,7 +266,7 @@ function SiteDetails({ site }: { site: NonNullable<ProductImportPreview["site"]>
       <div className="flex items-start gap-3">
         <Icon icon="mdi:map-marker-check-outline" width={22} height={22} className="mt-0.5 text-blue-600" />
         <div>
-          <h5 className="font-semibold text-blue-900">Matched site: {site.customerName} — {site.siteName}</h5>
+          <h5 className="font-semibold text-blue-900">Matched site: {site.siteName}</h5>
           <p className="mt-0.5 text-sm text-blue-800">{site.address}</p>
         </div>
       </div>

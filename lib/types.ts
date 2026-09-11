@@ -116,16 +116,6 @@ export interface AdminUser {
   deleted_at: string | null;
 }
 
-export interface Device {
-  id: string;
-  user_id: string;
-  platform: string | null;
-  name: string | null;
-  created_at: string;
-  last_seen_at: string;
-  revoked_at: string | null;
-}
-
 export interface StockCount {
   id: string;
   customer_id: string;

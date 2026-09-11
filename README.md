@@ -12,7 +12,6 @@ It uses a **REST API layer** (`/app/api/*`) for all dashboard data. The browser 
 - **Reps & Assignments** - create sales-rep logins and control which sites each rep manages.
 - **VMI Orders** - view submitted stock counts + line items, download the Excel export, and reject completed counts.
 - **Admin Users** - manage who can sign in to this dashboard.
-- **Devices** - view registered tablets and revoke them.
 
 ## Setup
 

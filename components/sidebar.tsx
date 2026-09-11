@@ -15,7 +15,6 @@ const navItems = [
   { href: "/reps", label: "Reps & Assignments", icon: "mdi:account-group-outline" },
   { href: "/orders", label: "Orders", icon: "mdi:clipboard-list-outline" },
   { href: "/admins", label: "Dashboard access", icon: "mdi:shield-account-outline" },
-  { href: "/devices", label: "Devices", icon: "mdi:cellphone" },
 ];
 
 export const Sidebar = ({ email }: { email: string }) => {

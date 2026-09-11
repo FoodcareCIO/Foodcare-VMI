@@ -27,7 +27,6 @@ export default function SiteDetailPage({ params }: { params: Promise<{ siteId: s
   if (siteQuery.error || !siteQuery.data) return <EmptyState message="Could not load this site. Please try again." />;
 
   const productOptions = siteQuery.data.products.map((product) => ({ value: product.id, label: `${product.sku} - ${product.name}` }));
-  const productLookup = Object.fromEntries(productOptions.map((option) => [option.value, option.label]));
   const contactFields: FieldDef[] = [
     { name: "name", label: "Contact name", required: true }, { name: "phone", label: "Phone" },
     { name: "email", label: "Email", type: "email" }, { name: "is_primary", label: "Primary contact", type: "checkbox" },
@@ -55,7 +54,8 @@ export default function SiteDetailPage({ params }: { params: Promise<{ siteId: s
     { name: "order_multiple", label: "Order multiple", type: "number", step: "0.01" }, { name: "notes", label: "Notes" },
   ];
   const siteProductColumns: ColumnDef[] = [
-    { key: "product_id", label: "Product", variant: "lookup", lookup: productLookup },
+    { key: "product_sku", label: "Product code" },
+    { key: "product_name", label: "Product name" },
     { key: "minimum_quantity", label: "Minimum" }, { key: "unit_of_measure", label: "Unit" },
     { key: "order_multiple", label: "Order in multiples of" }, { key: "notes", label: "Notes" },
   ];
@@ -69,8 +69,8 @@ export default function SiteDetailPage({ params }: { params: Promise<{ siteId: s
       <SiteSection title="Site instructions" loading={instructions.initialLoading} error={Boolean(instructions.error && !instructions.data)}>
         <EntityManager apiBase="/api/instructions" rows={instructions.data?.rows ?? []} columns={instructionColumns} fields={instructionFields} createLabel="Add instruction" emptyMessage="No instructions yet." hiddenFields={{ site_id: siteId }} onMutate={instructions.reload} refreshing={instructions.refreshing} sort={{ column: instructions.sort, dir: instructions.sortDir, onChange: instructions.setSort }} search={{ value: instructions.search, onChange: instructions.setSearch, placeholder: "Search instructions..." }} />
       </SiteSection>
-      <SiteSection title="Products & minimums" loading={siteProducts.initialLoading} error={Boolean(siteProducts.error && !siteProducts.data)}>
-        <EntityManager apiBase="/api/site-products" rows={siteProducts.data?.rows ?? []} columns={siteProductColumns} fields={siteProductFields} createLabel="Add product to site" emptyMessage="No products assigned to this site yet." hiddenFields={{ site_id: siteId }} onMutate={siteProducts.reload} refreshing={siteProducts.refreshing} sort={{ column: siteProducts.sort, dir: siteProducts.sortDir, onChange: siteProducts.setSort }} search={{ value: siteProducts.search, onChange: siteProducts.setSearch, placeholder: "Search site products..." }} />
+      <SiteSection title="Products" loading={siteProducts.initialLoading} error={Boolean(siteProducts.error && !siteProducts.data)}>
+        <EntityManager apiBase="/api/site-products" rows={siteProducts.data?.rows ?? []} columns={siteProductColumns} fields={siteProductFields} createLabel="Add product to site" emptyMessage="No products assigned to this site yet." hiddenFields={{ site_id: siteId }} onMutate={siteProducts.reload} refreshing={siteProducts.refreshing} sort={{ column: siteProducts.sort, dir: siteProducts.sortDir, onChange: siteProducts.setSort }} search={{ value: siteProducts.search, onChange: siteProducts.setSearch, placeholder: "Search products..." }} />
       </SiteSection>
     </div>
   );

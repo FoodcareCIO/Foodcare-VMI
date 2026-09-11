@@ -7,7 +7,6 @@ import {
   CatalogBars,
   OrderStatusChart,
   OverviewStatCard,
-  QuickAction,
 } from "@/components/overview/overview-parts";
 import {
   Badge,
@@ -148,8 +147,8 @@ export default function OverviewPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="p-6 lg:col-span-1 rounded-3xl!">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card className="rounded-3xl! p-6">
           <div className="mb-5 flex items-center gap-2">
             <Icon icon="mdi:chart-donut" width={20} height={20} className="text-emerald-600" />
             <h2 className="text-lg leading-none! text-slate-900">Order status</h2>
@@ -157,7 +156,7 @@ export default function OverviewPage() {
           <OrderStatusChart breakdown={statusBreakdown} />
         </Card>
 
-        <Card className="p-6 lg:col-span-1 rounded-3xl!">
+        <Card className="rounded-3xl! p-6">
           <div className="mb-5 flex items-center gap-2">
             <Icon icon="mdi:chart-bar" width={20} height={20} className="text-sky-600" />
             <h2 className="text-lg text-slate-900">Your business at a glance</h2>
@@ -169,32 +168,6 @@ export default function OverviewPage() {
           />
         </Card>
 
-        <Card className="p-6 lg:col-span-1 rounded-3xl!">
-          <div className="mb-5 flex items-center gap-2">
-            <Icon icon="mdi:lightning-bolt-outline" width={20} height={20} className="text-violet-600" />
-            <h2 className="text-lg text-slate-900">Quick actions</h2>
-          </div>
-          <div className="space-y-3">
-            <QuickAction
-              href="/sites"
-              icon="mdi:plus-circle-outline"
-              label="Manage sites"
-              description="Contacts, instructions, and products"
-            />
-            <QuickAction
-              href="/orders"
-              icon="mdi:clipboard-list-outline"
-              label="Review orders"
-              description="Orders submitted by sales reps"
-            />
-            <QuickAction
-              href="/reps"
-              icon="mdi:link-variant"
-              label="Rep assignments"
-              description="Choose which sites each rep can manage"
-            />
-          </div>
-        </Card>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

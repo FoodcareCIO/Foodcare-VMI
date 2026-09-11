@@ -85,9 +85,9 @@ export const OrderStatusChart = ({
 }) => {
   const total = breakdown.draft + breakdown.completed + breakdown.rejected;
   const segments = [
-    { key: "completed", label: "Submitted", value: breakdown.completed, color: "#10b981" },
-    { key: "draft", label: "In progress", value: breakdown.draft, color: "#f59e0b" },
-    { key: "rejected", label: "Rejected", value: breakdown.rejected, color: "#ef4444" },
+    { key: "completed", label: "Submitted", value: breakdown.completed, color: "#10b981", radius: 62 },
+    { key: "draft", label: "In progress", value: breakdown.draft, color: "#f59e0b", radius: 47 },
+    { key: "rejected", label: "Rejected", value: breakdown.rejected, color: "#ef4444", radius: 32 },
   ];
 
   if (total === 0) {
@@ -99,57 +99,81 @@ export const OrderStatusChart = ({
     );
   }
 
-  let cursor = 0;
-  const gradientStops = segments
-    .filter((segment) => segment.value > 0)
-    .map((segment) => {
-      const start = (cursor / total) * 100;
-      cursor += segment.value;
-      const end = (cursor / total) * 100;
-      return `${segment.color} ${start}% ${end}%`;
-    })
-    .join(", ");
+  const chartSegments = segments.map((segment) => {
+    const circumference = 2 * Math.PI * segment.radius;
+    const arcLength = circumference * 0.75;
+    const percentage = segment.value / total;
+    const dashLength = arcLength * percentage;
+
+    return {
+      ...segment,
+      circumference,
+      arcLength,
+      dashLength,
+      dashOffset: -(arcLength - dashLength),
+    };
+  });
 
   return (
-    <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-center">
-      <div className="relative h-40 w-40 shrink-0">
-        <div
-          className="h-full w-full rounded-full"
-          style={{ background: `conic-gradient(${gradientStops})` }}
-        />
-        <div className="absolute inset-4 flex flex-col items-center justify-center rounded-full bg-white">
+    <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
+      <div className="relative h-52 w-52 shrink-0">
+        <svg
+          viewBox="0 0 160 160"
+          className="h-full w-full overflow-visible"
+          role="img"
+          aria-label={`Order status: ${breakdown.completed} submitted, ${breakdown.draft} in progress, ${breakdown.rejected} rejected`}
+        >
+          {chartSegments.map((segment) => (
+            <g key={segment.key} transform="rotate(180 80 80)">
+              <circle
+                cx="80"
+                cy="80"
+                r={segment.radius}
+                fill="none"
+                stroke="#f1f5f9"
+                strokeWidth="10"
+                strokeLinecap="round"
+                strokeDasharray={`${segment.arcLength} ${segment.circumference - segment.arcLength}`}
+              />
+              {segment.value > 0 ? (
+                <circle
+                  cx="80"
+                  cy="80"
+                  r={segment.radius}
+                  fill="none"
+                  stroke={segment.color}
+                  strokeWidth="10"
+                  strokeLinecap="round"
+                  strokeDasharray={`${segment.dashLength} ${segment.circumference - segment.dashLength}`}
+                  strokeDashoffset={segment.dashOffset}
+                  className="transition-all duration-700 ease-out"
+                />
+              ) : null}
+            </g>
+          ))}
+        </svg>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-2xl font-semibold tracking-tight text-slate-900">{total}</span>
           <span className="text-sm text-slate-500">Total</span>
         </div>
       </div>
 
-      <ul className="w-full max-w-xs space-y-3">
+      <ul className="w-full max-w-xs space-y-4">
         {segments.map((segment) => {
           const pct = Math.round((segment.value / total) * 100);
           return (
-            <li key={segment.key}>
-              <div className="mb-1 flex items-center justify-between text-base">
-                <span className="flex items-center gap-2 text-slate-600">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: segment.color }}
-                  />
-                  {segment.label}
-                </span>
-                <span className="font-medium text-slate-900">
-                  {segment.value}{" "}
-                  <span className="text-slate-400">({pct}%)</span>
-                </span>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    width: `${pct}%`,
-                    backgroundColor: segment.color,
-                  }}
+            <li key={segment.key} className="flex items-center justify-between gap-8 text-base">
+              <span className="flex items-center gap-2 text-slate-600">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: segment.color }}
                 />
-              </div>
+                {segment.label}
+              </span>
+              <span className="font-medium text-slate-900">
+                {segment.value}{" "}
+                <span className="text-slate-400">({pct}%)</span>
+              </span>
             </li>
           );
         })}
@@ -197,33 +221,3 @@ export const CatalogBars = ({
   );
 };
 
-export const QuickAction = ({
-  href,
-  icon,
-  label,
-  description,
-}: {
-  href: string;
-  icon: string;
-  label: string;
-  description: string;
-}) => (
-  <Link
-    href={href}
-    className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50/30 hover:shadow-md"
-  >
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition group-hover:bg-emerald-500 group-hover:text-white">
-      <Icon icon={icon} width={20} height={20} />
-    </span>
-    <span className="min-w-0">
-      <span className="block text-base font-medium text-slate-900">{label}</span>
-      <span className="block text-base font-normal text-slate-500">{description}</span>
-    </span>
-    <Icon
-      icon="mdi:chevron-right"
-      width={18}
-      height={18}
-      className="ml-auto shrink-0 text-slate-300 transition group-hover:text-emerald-500"
-    />
-  </Link>
-);

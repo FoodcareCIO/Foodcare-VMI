@@ -129,6 +129,7 @@ export async function listCustomers(
   if (searchFilter) query = query.or(searchFilter);
   const { data, error, count } = await applyOrder(query, sort).range(from, to);
   if (error) throw new Error(error.message);
+
   return {
     rows: data ?? [],
     ...paginatedMeta(pagination.page, pagination.limit, count ?? 0),
@@ -450,8 +451,77 @@ export async function listProducts(
   if (searchFilter) query = query.or(searchFilter);
   const { data, error, count } = await applyOrder(query, sort).range(from, to);
   if (error) throw new Error(error.message);
+  const products = data ?? [];
+  const productIds = products.map((product) => String(product.id));
+  const assignedSites = new Map<string, string[]>();
+
+  if (productIds.length > 0) {
+    const { data: assignments, error: assignmentError } = await db
+      .from("site_products")
+      .select("product_id,site_id")
+      .in("product_id", productIds)
+      .is("deleted_at", null);
+    if (assignmentError) throw new Error(assignmentError.message);
+
+    const siteIds = [
+      ...new Set((assignments ?? []).map((assignment) => String(assignment.site_id))),
+    ];
+    const sitesById = new Map<string, { name: string; customerId: string }>();
+    const customersById = new Map<string, string>();
+
+    if (siteIds.length > 0) {
+      const { data: sites, error: siteError } = await db
+        .from("customer_sites")
+        .select("id,name,customer_id")
+        .in("id", siteIds)
+        .is("deleted_at", null);
+      if (siteError) throw new Error(siteError.message);
+
+      for (const site of sites ?? []) {
+        sitesById.set(String(site.id), {
+          name: String(site.name),
+          customerId: String(site.customer_id),
+        });
+      }
+
+      const customerIds = [
+        ...new Set([...sitesById.values()].map((site) => site.customerId)),
+      ];
+      if (customerIds.length > 0) {
+        const { data: customers, error: customerError } = await db
+          .from("customers")
+          .select("id,name")
+          .in("id", customerIds)
+          .is("deleted_at", null);
+        if (customerError) throw new Error(customerError.message);
+        for (const customer of customers ?? []) {
+          customersById.set(String(customer.id), String(customer.name));
+        }
+      }
+    }
+
+    for (const assignment of assignments ?? []) {
+      const productId = String(assignment.product_id);
+      const site = sitesById.get(String(assignment.site_id));
+      if (!site) continue;
+      const customerName = customersById.get(site.customerId);
+      const label =
+        customerName && customerName !== site.name
+          ? `${customerName} — ${site.name}`
+          : site.name;
+      const labels = assignedSites.get(productId) ?? [];
+      if (!labels.includes(label)) labels.push(label);
+      assignedSites.set(productId, labels);
+    }
+  }
+
   return {
-    rows: data ?? [],
+    rows: products.map((product) => ({
+      ...product,
+      assigned_sites: (assignedSites.get(String(product.id)) ?? []).sort((a, b) =>
+        a.localeCompare(b),
+      ),
+    })),
     ...paginatedMeta(pagination.page, pagination.limit, count ?? 0),
   };
 }
@@ -544,7 +614,14 @@ export async function listSiteProducts(
   const { data, error, count } = await applyOrder(query, sort).range(from, to);
   if (error) throw new Error(error.message);
   return {
-    rows: data ?? [],
+    rows: (data ?? []).map((row) => {
+      const product = joinOne(row.products);
+      return {
+        ...row,
+        product_sku: product?.sku ?? "-",
+        product_name: product?.name ?? "-",
+      };
+    }),
     ...paginatedMeta(pagination.page, pagination.limit, count ?? 0),
   };
 }

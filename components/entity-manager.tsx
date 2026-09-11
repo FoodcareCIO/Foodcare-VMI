@@ -8,6 +8,7 @@ import {
   Button,
   Checkbox,
   ConfirmModal,
+  Icon,
   Input,
   Modal,
   Pagination,
@@ -59,6 +60,7 @@ export type ColumnVariant =
   | "text"
   | "link"
   | "badge"
+  | "tags"
   | "boolean"
   | "truncate"
   | "lookup";
@@ -78,6 +80,7 @@ export interface ColumnDef {
 export interface LinkAction {
   label: string;
   hrefTemplate: string;
+  icon?: string;
 }
 
 const defaultFieldIcons: Partial<Record<FieldType, string>> = {
@@ -112,6 +115,22 @@ const CellContent = ({ col, row }: { col: ColumnDef; row: Row }): ReactNode => {
       );
     case "badge":
       return raw ? <Badge value={String(raw)} /> : (col.emptyText ?? "-");
+    case "tags": {
+      const tags = Array.isArray(raw) ? raw.map(String).filter(Boolean) : [];
+      if (tags.length === 0) return col.emptyText ?? "-";
+      return (
+        <div className="flex max-w-md flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full bg-sky-50 px-2.5 py-1 text-sm font-medium text-sky-700 ring-1 ring-inset ring-sky-200"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      );
+    }
     case "boolean":
       return raw ? (col.trueText ?? "Yes") : (col.emptyText ?? "-");
     case "truncate":
@@ -270,27 +289,33 @@ export const EntityManager = ({
                     ))}
                     {(canUpdate || canDelete || linkActions?.length || rowActions) && (
                       <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                           {linkActions?.map((action) => (
                             <Link
                               key={action.label}
                               href={buildHref(action.hrefTemplate, row)}
-                              className="cursor-pointer rounded-md px-2 py-1 text-sm font-medium text-slate-500 hover:bg-slate-200 hover:text-slate-800"
+                              className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-slate-300 px-2.5 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
                             >
+                              <Icon
+                                icon={action.icon ?? "mdi:open-in-new"}
+                                width={14}
+                                height={14}
+                              />
                               {action.label}
                             </Link>
                           ))}
                           {rowActions?.(row)}
                           {canUpdate && (
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
                               icon="mdi:pencil-outline"
                               title="Edit"
                               aria-label="Edit"
-                              className="p-1.5!"
                               onClick={() => setEditingRow(row)}
-                            />
+                            >
+                              Edit
+                            </Button>
                           )}
                           {canDelete && (
                             <DeleteButton
@@ -580,14 +605,20 @@ const DeleteButton = ({
     <>
       <Button
         type="button"
-        variant="ghost"
+        variant="outline"
         size="sm"
         icon={deleted ? "mdi:backup-restore" : "mdi:delete-outline"}
         title={deleted ? "Restore" : "Delete"}
         aria-label={deleted ? "Restore" : "Delete"}
-        className={`p-1.5! ${deleted ? "text-emerald-600 hover:bg-emerald-50!" : "text-red-500 hover:bg-red-50!"}`}
+        className={
+          deleted
+            ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50!"
+            : "border-red-200 text-red-600 hover:bg-red-50! hover:text-red-700!"
+        }
         onClick={() => setOpen(true)}
-      />
+      >
+        {deleted ? "Restore" : "Delete"}
+      </Button>
 
       <ConfirmModal
         open={open}

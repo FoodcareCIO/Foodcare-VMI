@@ -58,6 +58,7 @@ export default function RepsPage() {
         fields={fields}
         createLabel="Add rep"
         emptyMessage="No reps yet."
+        deleteDescription="This permanently removes the rep's login, so they can no longer sign in to the app. Their past orders are kept."
         linkActions={[
           {
             label: "Assignments",

@@ -11,7 +11,7 @@ const fields: FieldDef[] = [
   { name: "address", label: "Address", required: true },
 ];
 const columns: ColumnDef[] = [
-  { key: "name", label: "Site", variant: "link", hrefTemplate: "/sites/:id" },
+  { key: "name", label: "Name", variant: "link", hrefTemplate: "/sites/:id" },
   { key: "address", label: "Address" },
 ];
 

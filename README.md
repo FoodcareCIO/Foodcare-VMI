@@ -37,6 +37,8 @@ It uses a **REST API layer** (`/app/api/*`) for all dashboard data. The browser 
 
    This lets the dashboard reject completed counts (they are otherwise immutable).
 
+   Also apply `foodcare-vmi-app/supabase/migrations/202609230001_keep_users_after_auth_delete.sql`. Deleting a rep removes their Supabase Auth login, and this migration keeps their `public.users` profile so past orders still show who counted them.
+
 4. Seed at least one admin so you can sign in. In the Supabase SQL editor:
 
    ```sql

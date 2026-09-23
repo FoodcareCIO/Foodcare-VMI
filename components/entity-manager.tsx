@@ -156,6 +156,7 @@ interface EntityManagerProps {
   fields: FieldDef[];
   canUpdate?: boolean;
   canDelete?: boolean;
+  deleteDescription?: string;
   idKey?: string;
   createLabel?: string;
   emptyMessage?: string;
@@ -192,6 +193,7 @@ export const EntityManager = ({
   fields,
   canUpdate = true,
   canDelete = true,
+  deleteDescription,
   idKey = "id",
   createLabel = "Add new",
   emptyMessage = "No records yet.",
@@ -323,6 +325,7 @@ export const EntityManager = ({
                               id={String(row[idKey])}
                               idKey={idKey}
                               deleted={Boolean(row.deleted_at ?? row.revoked_at)}
+                              description={deleteDescription}
                               hiddenValues={hiddenFields}
                               onSuccess={onMutate}
                             />
@@ -571,6 +574,7 @@ const DeleteButton = ({
   id,
   idKey,
   deleted,
+  description,
   hiddenValues,
   onSuccess,
 }: {
@@ -578,6 +582,7 @@ const DeleteButton = ({
   id: string;
   idKey: string;
   deleted: boolean;
+  description?: string;
   hiddenValues?: Record<string, string>;
   onSuccess?: () => void | Promise<void>;
 }) => {
@@ -630,7 +635,7 @@ const DeleteButton = ({
         description={
           deleted
             ? "This will be restored and shown again in the mobile app."
-            : "This will be removed from the mobile app. Reps will no longer see it."
+            : description ?? "This will be removed from the mobile app. Reps will no longer see it."
         }
         confirmLabel={deleted ? "Restore" : "Delete"}
       />

@@ -727,6 +727,23 @@ export async function createRep(db: SupabaseClient, body: Record<string, unknown
   if (password.length < 8) throw new Error("Password must be at least 8 characters.");
   if (!displayName) throw new Error("Display name is required.");
 
+  if (employeeCode) {
+    // The unique constraint also covers deleted reps, which the list hides.
+    const { data: codeOwner, error: codeError } = await db
+      .from("sales_reps")
+      .select("deleted_at")
+      .eq("employee_code", String(employeeCode))
+      .maybeSingle();
+    if (codeError) throw new Error(codeError.message);
+    if (codeOwner) {
+      throw new Error(
+        codeOwner.deleted_at
+          ? `Employee code ${employeeCode} belongs to a deleted rep.`
+          : `Employee code ${employeeCode} is already in use.`,
+      );
+    }
+  }
+
   const { data: created, error: authError } = await db.auth.admin.createUser({
     email,
     password,
@@ -741,7 +758,16 @@ export async function createRep(db: SupabaseClient, body: Record<string, unknown
     user_id: created.user.id,
     employee_code: employeeCode,
   });
-  if (repError) throw new Error(repError.message);
+  if (repError) {
+    // Remove the login again so the email can be reused on the next attempt.
+    await db.auth.admin.deleteUser(created.user.id);
+    await db.from("users").delete().eq("id", created.user.id);
+    throw new Error(
+      repError.code === "23505"
+        ? `Employee code ${employeeCode} is already in use.`
+        : repError.message,
+    );
+  }
   return { ok: true };
 }
 
@@ -781,6 +807,46 @@ export async function deleteRep(
   id: string,
   restore: boolean,
 ) {
+  const { data: rep, error: repLookupError } = await db
+    .from("sales_reps")
+    .select("user_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (repLookupError) throw new Error(repLookupError.message);
+  if (!rep) throw new Error("Rep not found.");
+
+  if (restore) {
+    const { data: login, error: loginError } = await db.auth.admin.getUserById(rep.user_id);
+    if (loginError && loginError.status !== 404) throw new Error(loginError.message);
+    if (!login?.user) {
+      throw new Error("This rep's login was removed. Add them as a new rep instead.");
+    }
+  } else {
+    const { data: adminAccess, error: adminError } = await db
+      .from("admin_users")
+      .select("user_id")
+      .eq("user_id", rep.user_id)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (adminError) throw new Error(adminError.message);
+    if (adminAccess) {
+      throw new Error(
+        "This rep also has dashboard access. Remove it under Dashboard access first.",
+      );
+    }
+
+    // Remove the login before hiding the rep, so a failure can be retried.
+    // public.users is kept for order history and only marked deleted.
+    const { error: authError } = await db.auth.admin.deleteUser(rep.user_id);
+    if (authError && authError.status !== 404) throw new Error(authError.message);
+
+    const { error: userError } = await db
+      .from("users")
+      .update({ deleted_at: nowIso() })
+      .eq("id", rep.user_id);
+    if (userError) throw new Error(userError.message);
+  }
+
   const { error } = await db
     .from("sales_reps")
     .update({ deleted_at: restore ? null : nowIso() })
@@ -969,10 +1035,12 @@ export async function createAdmin(
   const role = String(body.role ?? "admin");
   if (!email) throw new Error("Email is required.");
 
+  // Deleted reps keep a users row after their login is removed; skip those.
   const { data: existingUser } = await db
     .from("users")
     .select("id")
     .eq("email", email)
+    .is("deleted_at", null)
     .maybeSingle();
 
   let userId = existingUser?.id as string | undefined;

@@ -62,6 +62,9 @@ const badgeStyles: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700",
   failed: "bg-red-100 text-red-700",
   not_requested: "bg-slate-100 text-slate-600",
+  sending: "bg-sky-100 text-sky-700",
+  waiting_photos: "bg-amber-100 text-amber-700",
+  not_sent: "bg-slate-100 text-slate-600",
   active: "bg-emerald-100 text-emerald-700",
   revoked: "bg-red-100 text-red-700",
   neutral: "bg-slate-100 text-slate-600",
@@ -80,9 +83,9 @@ const badgeLabels: Record<string, string> = {
   revoked: "Revoked",
 };
 
-export const Badge = ({ value }: { value: string }) => {
+export const Badge = ({ value, label: labelOverride }: { value: string; label?: string }) => {
   const style = badgeStyles[value] ?? badgeStyles.neutral;
-  const label = badgeLabels[value] ?? value.replaceAll("_", " ");
+  const label = labelOverride ?? badgeLabels[value] ?? value.replaceAll("_", " ");
   return (
     <span
       className={`inline-flex rounded-full px-2.5 py-0.5 text-sm font-medium ${style}`}
@@ -101,4 +104,12 @@ export const formatDate = (value: string | null | undefined): string => {
     hour: "numeric",
     minute: "2-digit",
   });
+};
+
+/** Day-first date and 24-hour time, e.g. 15/10/2026 10:42. */
+export const formatDateTime = (value: string | null | undefined): string => {
+  if (!value) return "-";
+  const date = new Date(value);
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };

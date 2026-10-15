@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
 
 import { Button, Icon, Modal } from "@/components/ui";
-import { api } from "@/lib/api/client";
+import { ApiError, api } from "@/lib/api/client";
 import { notify } from "@/lib/notifications";
 import type {
   ProductImportPreview,
@@ -37,12 +38,14 @@ export function ProductImport({ onImported }: { onImported: () => void | Promise
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<ProductImportPreview | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
   const [result, setResult] = useState<ProductImportResult | null>(null);
   const [busy, setBusy] = useState(false);
 
   const reset = () => {
     setFile(null);
     setPreview(null);
+    setPreviewError(null);
     setResult(null);
     if (inputRef.current) inputRef.current.value = "";
   };
@@ -56,16 +59,19 @@ export function ProductImport({ onImported }: { onImported: () => void | Promise
   const selectFile = (nextFile?: File) => {
     setFile(nextFile ?? null);
     setPreview(null);
+    setPreviewError(null);
     setResult(null);
   };
 
   const previewFile = async () => {
     if (!file) return;
     setBusy(true);
+    setPreviewError(null);
     try {
       setPreview(await submitFile<ProductImportPreview>(file, "preview"));
-    } catch {
-      // The shared API client displays the backend error.
+    } catch (error) {
+      // The shared API client also shows the error as a toast.
+      if (error instanceof ApiError) setPreviewError(error.message);
     } finally {
       setBusy(false);
     }
@@ -78,11 +84,7 @@ export function ProductImport({ onImported }: { onImported: () => void | Promise
       const nextResult = await submitFile<ProductImportResult>(file, "import");
       setResult(nextResult);
       await onImported();
-      notify.success(
-        nextResult.site
-          ? `${nextResult.imported} products and ${nextResult.minimumsImported} site minimums imported.`
-          : `${nextResult.imported} product${nextResult.imported === 1 ? "" : "s"} imported.`,
-      );
+      notify.success(`${nextResult.imported} product${nextResult.imported === 1 ? "" : "s"} imported.`);
     } catch {
       // The shared API client displays the backend error.
     } finally {
@@ -104,24 +106,11 @@ export function ProductImport({ onImported }: { onImported: () => void | Promise
                 <Icon icon="mdi:check-circle-outline" width={24} height={24} className="text-emerald-600" />
                 <div>
                   <h4 className="text-lg text-emerald-900">Import complete</h4>
-                  <p className="mt-1 text-emerald-800">
-                    {result.imported} products
-                    {result.site ? ` and ${result.minimumsImported} site minimums` : ""} were processed successfully.
-                  </p>
+                  <p className="mt-1 text-emerald-800">{result.imported} products were processed successfully.</p>
                 </div>
               </div>
             </div>
-            {result.site ? <SiteDetails site={result.site} /> : null}
-            <div>
-              <h5 className="mb-2 font-semibold text-slate-800">Product changes</h5>
-              <Summary created={result.created} updated={result.updated} restored={result.restored} />
-            </div>
-            {result.site ? (
-              <div>
-                <h5 className="mb-2 font-semibold text-slate-800">Site minimum changes</h5>
-                <Summary created={result.minimumsCreated} updated={result.minimumsUpdated} restored={result.minimumsRestored} />
-              </div>
-            ) : null}
+            <Summary created={result.created} updated={result.updated} restored={result.restored} />
             <div className="flex justify-end">
               <Button variant="secondary" onClick={close}>Done</Button>
             </div>
@@ -130,9 +119,12 @@ export function ProductImport({ onImported }: { onImported: () => void | Promise
           <div className="space-y-5">
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-600">
               <p>
-                Upload a product catalog or an existing Foodcare VMI sheet in <strong>.xlsx</strong> or <strong>.csv</strong> format.
-                VMI sheets also update minimum stock for the site identified inside the workbook.
-                Existing product codes are updated; missing products are left unchanged.
+                Upload a product catalogue in <strong>.xlsx</strong> or <strong>.csv</strong> format to add new
+                products or update existing ones by product code. This does not change any site&apos;s product list.
+              </p>
+              <p className="mt-2">
+                To change a customer&apos;s list, open <Link href="/sites" className="font-medium text-emerald-700 hover:underline">Sites</Link> →
+                the site → <strong>Upload site product list</strong>.
               </p>
               <Button variant="ghost" size="sm" icon="mdi:download" className="mt-2 -ml-2" onClick={downloadTemplate}>
                 Download CSV template
@@ -153,6 +145,9 @@ export function ProductImport({ onImported }: { onImported: () => void | Promise
               <p className="mt-1 text-sm text-slate-500">Maximum 5 MB and 5,000 product rows.</p>
             </div>
 
+            {previewError ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">{previewError}</div>
+            ) : null}
             {preview ? <PreviewDetails preview={preview} /> : null}
 
             <div className="flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-4">
@@ -163,7 +158,7 @@ export function ProductImport({ onImported }: { onImported: () => void | Promise
                 <>
                   <Button variant="outline" disabled={busy} onClick={() => setPreview(null)}>Choose another file</Button>
                   <Button variant="secondary" loading={busy} disabled={!preview.canImport} onClick={importFile}>
-                    Import {preview.validRows} products{preview.site ? " & minimums" : ""}
+                    Import {preview.validRows} products
                   </Button>
                 </>
               )}
@@ -194,20 +189,10 @@ function PreviewDetails({ preview }: { preview: ProductImportPreview }) {
       <div>
         <h4 className="text-lg text-slate-900">Preview</h4>
         <p className="text-sm text-slate-500">
-          {preview.fileName} · {preview.totalRows} product rows · {preview.format === "vmi" ? "VMI workbook" : "Product catalog"}
+          {preview.fileName} · {preview.totalRows} product rows
         </p>
       </div>
-      {preview.site ? <SiteDetails site={preview.site} /> : null}
-      <div>
-        <h5 className="mb-2 font-semibold text-slate-800">Product changes</h5>
-        <Summary created={preview.createCount} updated={preview.updateCount} restored={preview.restoreCount} />
-      </div>
-      {preview.site ? (
-        <div>
-          <h5 className="mb-2 font-semibold text-slate-800">Site minimum changes</h5>
-          <Summary created={preview.minimumCreateCount} updated={preview.minimumUpdateCount} restored={preview.minimumRestoreCount} />
-        </div>
-      ) : null}
+      <Summary created={preview.createCount} updated={preview.updateCount} restored={preview.restoreCount} />
 
       {preview.invalidRows > 0 ? (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4">
@@ -232,7 +217,6 @@ function PreviewDetails({ preview }: { preview: ProductImportPreview }) {
                   <th className="px-3 py-2">Name</th>
                   <th className="px-3 py-2">Unit</th>
                   <th className="px-3 py-2">Pack</th>
-                  {preview.site ? <th className="px-3 py-2">Minimum</th> : null}
                 </tr>
               </thead>
               <tbody>
@@ -243,11 +227,6 @@ function PreviewDetails({ preview }: { preview: ProductImportPreview }) {
                     <td className="px-3 py-2 text-slate-700">{row.name}</td>
                     <td className="px-3 py-2 text-slate-700">{row.defaultUnit}</td>
                     <td className="px-3 py-2 text-slate-700">{row.packSize ?? "-"}{row.packUnit ? ` ${row.packUnit}` : ""}</td>
-                    {preview.site ? (
-                      <td className="px-3 py-2 text-slate-700">
-                        {row.minimumQuantity ?? 0} {row.minimumUnit}
-                      </td>
-                    ) : null}
                   </tr>
                 ))}
               </tbody>
@@ -256,20 +235,6 @@ function PreviewDetails({ preview }: { preview: ProductImportPreview }) {
           {preview.validRows > preview.sample.length ? <p className="border-t border-slate-100 px-3 py-2 text-sm text-slate-500">Showing the first {preview.sample.length} valid rows.</p> : null}
         </div>
       ) : null}
-    </div>
-  );
-}
-
-function SiteDetails({ site }: { site: NonNullable<ProductImportPreview["site"]> }) {
-  return (
-    <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-      <div className="flex items-start gap-3">
-        <Icon icon="mdi:map-marker-check-outline" width={22} height={22} className="mt-0.5 text-blue-600" />
-        <div>
-          <h5 className="font-semibold text-blue-900">Matched site: {site.siteName}</h5>
-          <p className="mt-0.5 text-sm text-blue-800">{site.address}</p>
-        </div>
-      </div>
     </div>
   );
 }

@@ -7,11 +7,14 @@ It uses a **REST API layer** (`/app/api/*`) for all dashboard data. The browser 
 ## Features
 
 - **Overview** - live KPIs and recent orders.
-- **Sites** - CRUD for sites, contacts, and site instructions.
-- **Products** - product catalog CRUD; bulk Excel/CSV catalog imports; Foodcare VMI workbook imports with automatic site matching and per-site minimum updates.
+- **Sites** - CRUD for sites, contacts, and site instructions; extra order email addresses per site; upload a site product list (Excel/CSV, including Foodcare VMI workbooks) that replaces the site's whole list in one transaction, with a full preview, tablet view, and 12-month upload history with restore.
+- **Products** - product catalog CRUD and bulk Excel/CSV catalog imports (site lists are rejected here).
 - **Reps** - create sales-rep logins and control which sites each rep manages.
-- **VMI Orders** - view submitted stock counts + line items, download the Excel export, and reject completed counts.
+- **VMI Orders** - view submitted stock counts + line items, email status, recipients and photos; resend the order email, download the Excel export, and reject completed counts.
+- **Settings** - main order email, copy addresses, and who is alerted when order emails keep failing.
 - **Admin Users** - manage who can sign in to this dashboard.
+
+Run the tests with `node --test "tests/*.test.cjs"`.
 
 ## Setup
 

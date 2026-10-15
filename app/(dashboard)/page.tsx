@@ -45,6 +45,7 @@ interface OverviewData {
     completed_at: string | null;
     customer_sites: { name: string } | null;
   }[];
+  orderEmailMissing: boolean;
 }
 
 const todayLabel = new Date().toLocaleDateString([], {
@@ -103,24 +104,38 @@ export default function OverviewPage() {
         }
       />
 
+      {data.orderEmailMissing ? (
+        <Link
+          href="/settings"
+          className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 transition hover:border-amber-300 hover:bg-amber-100/60"
+        >
+          <Icon icon="mdi:email-alert-outline" width={22} height={22} className="mt-0.5 text-amber-600" />
+          <div>
+            <p className="text-base font-semibold text-amber-900">No main order email is set</p>
+            <p className="mt-0.5 text-base text-amber-800/80">
+              Submitted orders cannot be emailed until a main order email is saved in Settings.
+            </p>
+          </div>
+          <span className="ml-auto shrink-0 text-base font-medium text-amber-900">Open settings</span>
+        </Link>
+      ) : null}
+
       {metrics.failedExports > 0 ? (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+        <Link
+          href="/orders?email=failed"
+          className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 transition hover:border-amber-300 hover:bg-amber-100/60"
+        >
           <Icon icon="mdi:alert-outline" width={22} height={22} className="mt-0.5 text-amber-600" />
           <div>
             <p className="text-base font-semibold text-amber-900">
               {metrics.failedExports} report{metrics.failedExports === 1 ? "" : "s"} need attention
             </p>
             <p className="mt-0.5 text-base text-amber-800/80">
-              Some order reports could not be created or sent. Please review those orders.
+              Some order reports could not be created or sent. Open those orders to see the error or resend the email.
             </p>
           </div>
-          <Link
-            href="/orders"
-            className="ml-auto shrink-0 text-base font-medium text-amber-900 underline-offset-2 hover:underline"
-          >
-            View orders
-          </Link>
-        </div>
+          <span className="ml-auto shrink-0 text-base font-medium text-amber-900">View orders</span>
+        </Link>
       ) : null}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

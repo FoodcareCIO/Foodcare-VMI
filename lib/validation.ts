@@ -50,3 +50,37 @@ export const validateChangePassword = (
 
   return errors;
 };
+
+export const MAX_EMAIL_LIST_LENGTH = 25;
+
+/** Splits a comma/newline separated list (or an array) into unique addresses. */
+export const parseEmailList = (value: unknown): { emails: string[]; invalid: string[] } => {
+  const parts = Array.isArray(value) ? value.map(String) : String(value ?? "").split(/[\s,;]+/);
+  const emails: string[] = [];
+  const invalid: string[] = [];
+  const seen = new Set<string>();
+  for (const part of parts) {
+    const email = part.trim();
+    if (!email) continue;
+    if (!isValidEmail(email)) {
+      invalid.push(email);
+      continue;
+    }
+    const key = email.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    emails.push(email);
+  }
+  return { emails, invalid };
+};
+
+export const emailListError = (value: unknown): string | undefined => {
+  const { emails, invalid } = parseEmailList(value);
+  if (invalid.length > 0) {
+    return `Not a valid email address: ${invalid.join(", ")}`;
+  }
+  if (emails.length > MAX_EMAIL_LIST_LENGTH) {
+    return `Enter at most ${MAX_EMAIL_LIST_LENGTH} addresses.`;
+  }
+  return undefined;
+};

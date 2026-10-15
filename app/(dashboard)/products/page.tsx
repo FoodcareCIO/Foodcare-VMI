@@ -47,7 +47,7 @@ export default function ProductsPage() {
     <div>
       <PageHeader
         title="Products"
-        description="Add and edit products. Set minimum stock levels on each site page."
+        description="Add and edit the product catalogue. Each site's product list and minimum stock are managed on the site page."
       />
       <EntityManager
         apiBase="/api/products"

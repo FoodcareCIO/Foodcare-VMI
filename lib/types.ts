@@ -19,6 +19,10 @@ export interface CustomerSite {
   customer_id: string;
   name: string;
   address: string;
+  product_list_version: number;
+  product_list_updated_at: string | null;
+  /** Extra order recipients, added to the main order address. */
+  order_recipients: string[];
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -127,6 +131,9 @@ export interface StockCount {
   completed_at: string | null;
   notes: string | null;
   rejection_reason: string | null;
+  /** Photo IDs attached on submit; null for older app versions. */
+  expected_attachment_ids: string[] | null;
+  received_at: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -158,12 +165,43 @@ export interface StockCountExport {
   file_name: string;
   storage_path: string | null;
   generated_status: "pending" | "generated" | "failed";
-  email_status: "not_requested" | "pending" | "sent" | "failed";
+  email_status: "not_requested" | "pending" | "sending" | "sent" | "failed";
   recipients: string[];
+  cc_recipients: string[];
+  email_attempts: number;
+  next_email_attempt_at: string | null;
+  sending_started_at: string | null;
+  resend_requested_at: string | null;
+  resend_requested_by: string | null;
+  photos_expected: number | null;
+  photos_attached: number | null;
+  office_alerted_at: string | null;
+  support_alerted_at: string | null;
   generated_at: string | null;
   emailed_at: string | null;
   last_error: string | null;
   created_at: string;
   updated_at: string;
   version: number;
+}
+
+export interface StockCountAttachment {
+  id: string;
+  stock_count_id: string;
+  storage_path: string;
+  mime_type: string;
+  checksum: string;
+  created_at: string;
+  deleted_at: string | null;
+}
+
+export interface OrderEmailSettings {
+  main_recipient: string | null;
+  cc_recipients: string[];
+  /** Office/order administrators alerted when an order email keeps failing. */
+  alert_recipients: string[];
+  /** Technical support alerted for persistent problems. */
+  support_recipients: string[];
+  updated_at: string | null;
+  updated_by_name: string | null;
 }

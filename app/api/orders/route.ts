@@ -14,6 +14,7 @@ export async function GET(request: Request) {
       defaultColumn: ORDER_DEFAULT_SORT,
       defaultAscending: false,
     });
-    return jsonOk(await listOrders(db, pagination, sort, parseSearch(req)));
+    const email = new URL(req.url).searchParams.get("email");
+    return jsonOk(await listOrders(db, pagination, sort, parseSearch(req), { email }));
   }, request);
 }

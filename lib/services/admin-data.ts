@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { nowIso } from "@/lib/api/server";
 import type { AdminSession } from "@/lib/auth";
+import { countPhotos, orderEmailState } from "@/lib/order-email";
 import {
   paginatedMeta,
   paginationRange,
@@ -21,8 +22,12 @@ import {
   siteProductSearch,
   siteSearch,
 } from "@/lib/search-config";
+import type { OrderEmailSettings } from "@/lib/types";
+import { emailListError, isValidEmail, parseEmailList } from "@/lib/validation";
 
 const EXPORT_BUCKET = "vmi-exports";
+const ATTACHMENT_BUCKET = "vmi-attachments";
+const PHOTO_URL_SECONDS = 600;
 
 type OrderableQuery = {
   order: (
@@ -100,6 +105,12 @@ export async function getOverview(db: SupabaseClient) {
     .order("started_at", { ascending: false })
     .limit(8);
 
+  const { data: emailSettings, error: emailSettingsError } = await db
+    .from("order_email_settings")
+    .select("main_recipient")
+    .eq("id", true)
+    .maybeSingle();
+
   return {
     metrics: {
       sites,
@@ -111,7 +122,73 @@ export async function getOverview(db: SupabaseClient) {
     },
     statusBreakdown,
     recent: recent ?? [],
+    orderEmailMissing: !emailSettingsError && !emailSettings?.main_recipient,
   };
+}
+
+export async function getOrderEmailSettings(db: SupabaseClient): Promise<OrderEmailSettings> {
+  const { data, error } = await db
+    .from("order_email_settings")
+    .select("main_recipient,cc_recipients,alert_recipients,support_recipients,updated_at,users(display_name)")
+    .eq("id", true)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return {
+    main_recipient: data?.main_recipient ?? null,
+    cc_recipients: data?.cc_recipients ?? [],
+    alert_recipients: data?.alert_recipients ?? [],
+    support_recipients: data?.support_recipients ?? [],
+    updated_at: data?.updated_at ?? null,
+    updated_by_name: joinOne(data?.users)?.display_name ?? null,
+  };
+}
+
+function cleanEmailList(value: unknown, label: string): string[] {
+  const error = emailListError(value);
+  if (error) throw new Error(`${label}: ${error}`);
+  return parseEmailList(value).emails;
+}
+
+export async function updateOrderEmailSettings(
+  db: SupabaseClient,
+  session: AdminSession,
+  body: Record<string, unknown>,
+) {
+  const main = String(body.main_recipient ?? "").trim();
+  if (main && !isValidEmail(main)) {
+    throw new Error("Main order email: enter one valid email address.");
+  }
+  const { data, error } = await db
+    .from("order_email_settings")
+    .update({
+      main_recipient: main || null,
+      cc_recipients: cleanEmailList(body.cc_recipients, "Copy (CC) addresses"),
+      alert_recipients: cleanEmailList(body.alert_recipients, "Office alert addresses"),
+      support_recipients: cleanEmailList(body.support_recipients, "Technical support addresses"),
+      updated_by: session.userId,
+    })
+    .eq("id", true)
+    .select("id");
+  if (error) throw new Error(error.message);
+  if (!data?.length) throw new Error("Order email settings are missing from the database.");
+  return getOrderEmailSettings(db);
+}
+
+export async function updateSiteOrderRecipients(
+  db: SupabaseClient,
+  siteId: string,
+  body: Record<string, unknown>,
+) {
+  const recipients = cleanEmailList(body.order_recipients, "Extra order addresses");
+  const { data, error } = await db
+    .from("customer_sites")
+    .update({ order_recipients: recipients })
+    .eq("id", siteId)
+    .is("deleted_at", null)
+    .select("id");
+  if (error) throw new Error(error.message);
+  if (!data?.length) throw new Error("Site not found.");
+  return { ok: true, order_recipients: recipients };
 }
 
 export async function listCustomers(
@@ -926,26 +1003,58 @@ export async function setRepAssignment(
   return { ok: true };
 }
 
+type ExportRow = Record<string, unknown> & { email_status?: string | null };
+
+type AttachmentRow = {
+  id: string;
+  storage_path: string;
+  mime_type: string;
+  created_at: string;
+  deleted_at: string | null;
+};
+
 export async function listOrders(
   db: SupabaseClient,
   pagination: PaginationInput,
   sort: SortInput,
   search?: string,
+  filters: { email?: string | null } = {},
 ) {
   const { from, to } = paginationRange(pagination);
   const searchFilter = await buildSearchFilter(db, search, orderSearch);
+  const failedOnly = filters.email === "failed";
   let query = db
     .from("stock_counts")
     .select(
-      "id,status,started_at,completed_at,customer_sites(name),sales_reps(users(display_name)),stock_count_exports(file_name,email_status,generated_status)",
+      failedOnly
+        ? "id,status,started_at,completed_at,received_at,expected_attachment_ids,customer_sites(name),sales_reps(users(display_name)),stock_count_exports!inner(file_name,email_status,generated_status),stock_count_attachments(id,deleted_at)"
+        : "id,status,started_at,completed_at,received_at,expected_attachment_ids,customer_sites(name),sales_reps(users(display_name)),stock_count_exports(file_name,email_status,generated_status),stock_count_attachments(id,deleted_at)",
       { count: "exact" },
     )
     .is("deleted_at", null);
   if (searchFilter) query = query.or(searchFilter);
+  if (failedOnly) {
+    // Same orders as the Overview "reports need attention" count.
+    query = query.or("email_status.eq.failed,generated_status.eq.failed", {
+      referencedTable: "stock_count_exports",
+    });
+  }
   const { data, error, count } = await applyOrder(query, sort).range(from, to);
   if (error) throw new Error(error.message);
   return {
-    orders: data ?? [],
+    orders: (data ?? []).map(
+      ({ stock_count_attachments: attachments, expected_attachment_ids: expectedIds, ...order }) => {
+        const exportRow = joinOne<ExportRow>(order.stock_count_exports as ExportRow | ExportRow[] | null);
+        const photos = countPhotos(expectedIds, attachments);
+        return {
+          ...order,
+          stock_count_exports: exportRow,
+          email_state: orderEmailState(order, exportRow?.email_status, photos),
+          photos_expected: photos.expected,
+          photos_received: photos.received,
+        };
+      },
+    ),
     ...paginatedMeta(pagination.page, pagination.limit, count ?? 0),
   };
 }
@@ -954,13 +1063,54 @@ export async function getOrder(db: SupabaseClient, id: string) {
   const { data, error } = await db
     .from("stock_counts")
     .select(
-      "*,customer_sites(name,address),sales_reps(users(display_name,email)),stock_count_items(*),stock_count_exports(*)",
+      "*,customer_sites(name,address),sales_reps(users(display_name,email)),stock_count_items(*),stock_count_exports(*),stock_count_attachments(id,storage_path,mime_type,created_at,deleted_at)",
     )
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Order not found.");
-  return data;
+
+  const { stock_count_attachments: allAttachments, ...order } = data;
+  const exportRow = joinOne<ExportRow>(order.stock_count_exports as ExportRow | ExportRow[] | null);
+  const attachments = ((allAttachments ?? []) as AttachmentRow[])
+    .filter((attachment) => !attachment.deleted_at)
+    .sort((left, right) => left.created_at.localeCompare(right.created_at));
+  const urls = new Map<string, string>();
+  if (attachments.length > 0) {
+    const { data: signed } = await db.storage
+      .from(ATTACHMENT_BUCKET)
+      .createSignedUrls(attachments.map((attachment) => attachment.storage_path), PHOTO_URL_SECONDS);
+    for (const entry of signed ?? []) {
+      if (entry.path && entry.signedUrl && !entry.error) urls.set(entry.path, entry.signedUrl);
+    }
+  }
+  const photos = countPhotos(order.expected_attachment_ids, attachments);
+  return {
+    ...order,
+    stock_count_exports: exportRow ? [exportRow] : [],
+    email_state: orderEmailState(order, exportRow?.email_status, photos),
+    photos_expected: photos.expected,
+    photos_received: photos.received,
+    photos: attachments.map((attachment) => ({
+      id: attachment.id,
+      mime_type: attachment.mime_type,
+      created_at: attachment.created_at,
+      url: urls.get(attachment.storage_path) ?? null,
+    })),
+  };
+}
+
+export async function requestOrderEmailResend(
+  db: SupabaseClient,
+  session: AdminSession,
+  orderId: string,
+) {
+  const { error } = await db.rpc("request_order_email_resend", {
+    p_stock_count_id: orderId,
+    p_actor: session.userId,
+  });
+  if (error) throw new Error(error.message);
+  return { ok: true, message: "The order email will be sent again within a minute." };
 }
 
 export async function rejectOrder(

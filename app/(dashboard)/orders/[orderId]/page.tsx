@@ -4,6 +4,8 @@ import Link from "next/link";
 import { use, useMemo } from "react";
 
 import { RejectForm } from "@/components/reject-form";
+import { OrderEmailCard } from "@/features/orders/order-email-card";
+import { OrderPhotos, type OrderPhoto } from "@/features/orders/order-photos";
 import {
   Badge,
   Button,
@@ -22,6 +24,8 @@ import {
 import { api } from "@/lib/api/client";
 import { useClientTableSort } from "@/lib/api/use-client-table-sort";
 import { useApiQuery } from "@/lib/api/use-query";
+import type { OrderEmailState } from "@/lib/order-email";
+import type { StockCountExport } from "@/lib/types";
 
 export default function OrderDetailPage({
   params,
@@ -70,7 +74,7 @@ export default function OrderDetailPage({
   const reps = order.sales_reps as {
     users?: { display_name?: string } | null;
   } | null;
-  const exports = (order.stock_count_exports as Record<string, unknown>[] | null) ?? [];
+  const exports = (order.stock_count_exports as Partial<StockCountExport>[] | null) ?? [];
   const exportRow = exports[0];
 
   async function downloadExport() {
@@ -138,6 +142,21 @@ export default function OrderDetailPage({
         {order.status === "completed" && (
           <RejectForm orderId={orderId} onSuccess={reload} />
         )}
+      </div>
+
+      <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <OrderEmailCard
+          orderId={orderId}
+          orderStatus={String(order.status)}
+          state={order.email_state as OrderEmailState}
+          exportRow={exportRow ?? null}
+          onResent={reload}
+        />
+        <OrderPhotos
+          photos={(order.photos as OrderPhoto[] | undefined) ?? []}
+          expected={(order.photos_expected as number | null | undefined) ?? null}
+          received={Number(order.photos_received ?? 0)}
+        />
       </div>
 
       <h2 className="mb-3 text-xl tracking-tight text-slate-900">Products in this order</h2>

@@ -42,7 +42,7 @@ Icons are bundled with the app (nothing is downloaded at runtime). After using a
 
    This lets the dashboard reject completed counts (they are otherwise immutable).
 
-   Also apply `foodcare-vmi-app/supabase/migrations/202609230001_keep_users_after_auth_delete.sql`. Deleting a rep removes their Supabase Auth login, and this migration keeps their `public.users` profile so past orders still show who counted them.
+   Also apply `foodcare-vmi-app/supabase/migrations/202609230001_keep_users_after_auth_delete.sql` (lets the dashboard remove a rep's Supabase Auth login) and `foodcare-vmi-app/supabase/migrations/202610160001_delete_sales_rep_data.sql`. Deleting a rep is permanent: it removes their login, site assignments, tablets, and all of their orders with order photos and Excel files.
 
 4. Seed at least one admin so you can sign in. In the Supabase SQL editor:
 

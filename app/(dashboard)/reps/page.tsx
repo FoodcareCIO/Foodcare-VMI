@@ -58,7 +58,7 @@ export default function RepsPage() {
         fields={fields}
         createLabel="Add sales rep"
         emptyMessage="No sales reps yet."
-        deleteDescription="This removes the rep's login, so they can no longer sign in to the app. Their past orders are kept."
+        deleteDescription="This permanently deletes the rep's login, site assignments, and all of their orders, including order photos and Excel files. This can't be undone."
         linkActions={[
           {
             label: "Assign sites",

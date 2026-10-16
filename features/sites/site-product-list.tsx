@@ -338,7 +338,7 @@ function PreviewDetails({
           <ul className="mt-2 max-h-32 space-y-0.5 overflow-y-auto text-sm">
             {preview.renamedShared.map((product) => (
               <li key={product.sku}>
-                {product.sku}: {product.oldName} → {product.newName} ({plural(product.otherSites, "other site")})
+                {product.sku}: {product.oldName} <ChangeArrow /> {product.newName} ({plural(product.otherSites, "other site")})
               </li>
             ))}
           </ul>
@@ -364,8 +364,8 @@ function PreviewDetails({
               <CompactCell>
                 {row.changes.map((change) => (
                   <div key={change.field}>
-                    <span className="text-fg-muted">{change.label}:</span> {displayValue(change.before)} →{" "}
-                    <strong className="font-semibold text-fg">{displayValue(change.after)}</strong>
+                    <span className="text-fg-muted">{change.label}:</span> {displayValue(change.before)} <ChangeArrow />{" "}
+                    <strong className="font-medium text-fg">{displayValue(change.after)}</strong>
                   </div>
                 ))}
               </CompactCell>
@@ -386,7 +386,7 @@ function PreviewDetails({
 function ChangeTable({ title, headers, children }: { title: string; headers: string[]; children: ReactNode }) {
   return (
     <div>
-      <h4 className="mb-2 text-subhead font-semibold text-fg">{title}</h4>
+      <h4 className="mb-2 text-subhead font-medium text-fg">{title}</h4>
       <CompactTable headers={headers}>{children}</CompactTable>
     </div>
   );
@@ -409,7 +409,7 @@ function TabletViewModal({ siteId, siteName, onClose }: { siteId: string; siteNa
   return (
     <Modal title="What the tablet shows" size="lg" onClose={onClose}>
       {loading ? (
-        <LoadingPage label="Loading the tablet list..." />
+        <LoadingPage compact label="Loading the tablet list..." />
       ) : error || !data ? (
         <EmptyState message="Could not load the tablet list. Please try again." />
       ) : (
@@ -495,7 +495,7 @@ function UploadHistoryModal({
         before that change. The list it replaces stays in this history.
       </p>
       {loading && !data ? (
-        <LoadingPage label="Loading past uploads..." />
+        <LoadingPage compact label="Loading past uploads..." />
       ) : error && !data ? (
         <EmptyState message="Could not load past uploads. Please try again." />
       ) : uploads.length === 0 ? (
@@ -551,3 +551,11 @@ function UploadHistoryModal({
     </Modal>
   );
 }
+
+/** "old → new": an arrow icon between a value and the value it changes to. */
+const ChangeArrow = () => (
+  <>
+    <Icon icon="mdi:arrow-right" size="sm" className="inline align-[-3px] text-fg-muted" />
+    <span className="sr-only">changes to</span>
+  </>
+);

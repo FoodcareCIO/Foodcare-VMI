@@ -35,7 +35,7 @@ export const Sidebar = ({ email }: { email: string }) => {
       <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-line bg-surface px-4 lg:hidden">
         <div className="flex items-center gap-3">
           <FoodcareLogo size={32} />
-          <span className="text-lg font-bold text-fg">Foodcare</span>
+          <span className="text-lg font-semibold text-fg">Foodcare</span>
         </div>
         <button
           type="button"
@@ -65,7 +65,7 @@ export const Sidebar = ({ email }: { email: string }) => {
           <div className="flex items-center gap-3">
             <FoodcareLogo size={40} />
             <div className="leading-tight">
-              <p className="text-lg font-bold text-fg">Foodcare</p>
+              <p className="text-lg font-semibold text-fg">Foodcare</p>
               <p className="text-xs text-fg-muted">Admin</p>
             </div>
           </div>
@@ -88,13 +88,17 @@ export const Sidebar = ({ email }: { email: string }) => {
                 href={item.href}
                 onClick={() => setOpen(false)}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-3 rounded-full px-4 py-2.5 text-subhead transition ${
+                // The focus ring is drawn inside the item: the menu scrolls, which would clip an outer ring.
+                className={`flex items-center gap-3 rounded-full px-4 py-2.5 text-subhead transition -outline-offset-2 ${
                   active
-                    ? "bg-primary-soft font-bold text-primary-text"
+                    ? "bg-primary-soft font-medium text-primary-text"
                     : "text-fg hover:bg-subtle"
                 }`}
               >
-                <Icon icon={active ? item.activeIcon : item.icon} size="lg" />
+                {/* A fixed-size slot, so the label never moves when the icon changes. */}
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+                  <Icon icon={active ? item.activeIcon : item.icon} size="lg" />
+                </span>
                 {item.label}
               </Link>
             );
@@ -104,7 +108,7 @@ export const Sidebar = ({ email }: { email: string }) => {
         <div className="flex flex-col gap-3 border-t border-line pt-4">
           <div className="px-2">
             <p className="text-xs text-fg-muted">Signed in as</p>
-            <p className="truncate text-sm font-semibold text-fg" title={email}>
+            <p className="truncate text-sm font-medium text-fg" title={email}>
               {email}
             </p>
           </div>

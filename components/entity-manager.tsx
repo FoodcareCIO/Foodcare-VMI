@@ -113,7 +113,7 @@ const CellContent = ({ col, row }: { col: ColumnDef; row: Row }): ReactNode => {
       return (
         <Link
           href={buildHref(col.hrefTemplate ?? "", row)}
-          className="font-semibold text-primary-text hover:underline"
+          className="font-medium text-primary-text hover:underline"
         >
           {formatCell(raw)}
         </Link>
@@ -266,7 +266,10 @@ export const EntityManager = ({
             </TableHead>
             <tbody>
               {rows.length === 0 ? (
-                <TableEmptyRow colSpan={columnCount} message={emptyMessage} />
+                <TableEmptyRow
+                  colSpan={columnCount}
+                  message={search?.value ? `Nothing matches “${search.value}”.` : emptyMessage}
+                />
               ) : (
                 rows.map((row) => (
                   <TableRow key={String(row[idKey])}>

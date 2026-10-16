@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Sidebar } from "@/components/sidebar";
-import { Loading } from "@/components/ui";
+import { LogoLoader } from "@/components/ui";
 import { api } from "@/lib/api/client";
 import type { AdminSession } from "@/lib/auth";
 
@@ -25,7 +25,7 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-canvas">
-        <Loading size="lg" label="Signing you in..." />
+        <LogoLoader label="Signing you in..." />
       </div>
     );
   }

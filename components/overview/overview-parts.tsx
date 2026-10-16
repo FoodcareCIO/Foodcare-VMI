@@ -76,7 +76,7 @@ export const OrderStatusChart = ({
           ))}
         </svg>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-fg">{total}</span>
+          <span className="text-2xl font-semibold text-fg">{total}</span>
           <span className="text-sm text-fg-muted">Orders</span>
         </div>
       </div>
@@ -93,7 +93,7 @@ export const OrderStatusChart = ({
                 />
                 {segment.label}
               </span>
-              <span className="font-semibold text-fg">
+              <span className="font-medium text-fg">
                 {segment.value}{" "}
                 <span className="font-normal text-fg-muted">({pct}%)</span>
               </span>

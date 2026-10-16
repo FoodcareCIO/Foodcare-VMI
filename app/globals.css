@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@fontsource-variable/inter";
 
 /*
  * Foodcare design tokens (admin dashboard).
@@ -110,42 +111,62 @@
 
   --shadow-float: var(--float-shadow);
 
-  /* Fonts: the system font, like the tablet app */
+  /*
+   * Inter, self-hosted, same as the tablet app (see
+   * foodcare-vmi-app/src/constants/theme.ts). A single font file, loaded
+   * above, renders identically in every browser and OS instead of each one
+   * substituting its own system font (Segoe UI, San Francisco, Roboto, ...),
+   * which is what made text look inconsistent before.
+   */
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
-    Arial, "Noto Sans", sans-serif;
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, "Noto Sans", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* Type scale. Identical sizes to the tablet app:
-     xs caption 13 | sm label 14 | base body 15 | subhead 16 | lg heading 18
-     xl title 24 | 2xl metric 28 | 3xl display 30 */
-  --text-xs: 0.8125rem;
-  --text-xs--line-height: 1.125rem;
-  --text-sm: 0.875rem;
-  --text-sm--line-height: 1.25rem;
-  --text-base: 0.9375rem;
-  --text-base--line-height: 1.375rem;
-  --text-subhead: 1rem;
-  --text-subhead--line-height: 1.375rem;
-  --text-lg: 1.125rem;
-  --text-lg--line-height: 1.5rem;
-  --text-xl: 1.5rem;
-  --text-xl--line-height: 1.875rem;
-  --text-2xl: 1.75rem;
-  --text-2xl--line-height: 2.125rem;
-  --text-3xl: 1.875rem;
-  --text-3xl--line-height: 2.25rem;
+  /* Type scale. Identical sizes to the tablet app (src/constants/theme.ts):
+     xs caption 12 | sm label 12.5 | base body 13 | subhead 14 | lg heading 16
+     xl title 20 | 2xl metric 24 | 3xl display 26 */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.78125rem;
+  --text-sm--line-height: 1.0625rem;
+  --text-base: 0.8125rem;
+  --text-base--line-height: 1.1875rem;
+  --text-subhead: 0.875rem;
+  --text-subhead--line-height: 1.25rem;
+  --text-lg: 1rem;
+  --text-lg--line-height: 1.375rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.625rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.875rem;
+  --text-3xl: 1.625rem;
+  --text-3xl--line-height: 2rem;
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
-  --font-weight-bold: 700;
 
   /* Motion */
   --animate-fade-in: fade-in 160ms ease-out both;
   --animate-rise-in: rise-in 260ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-pop-in: pop-in 200ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-slide-in-left: slide-in-left 240ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  --animate-dot-bounce: dot-bounce 1.1s ease-in-out infinite both;
+
+  @keyframes dot-bounce {
+    0%,
+    80%,
+    100% {
+      opacity: 0.35;
+      transform: scale(0.65);
+    }
+    40% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
 
   @keyframes fade-in {
     from {
@@ -204,7 +225,7 @@ h1,
 h2,
 h3,
 h4 {
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-semibold);
   letter-spacing: -0.01em;
   line-height: 1.25;
 }

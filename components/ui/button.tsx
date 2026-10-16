@@ -13,10 +13,12 @@ const variantClasses: Record<ButtonVariant, string> = {
   danger: "border border-transparent bg-danger-soft text-danger-text hover:border-danger",
 };
 
+// Buttons use the same semibold weight at every size (like Twitter pill CTAs): a small
+// button used to read as a different, lighter weight than the rest.
 const sizeClasses: Record<ButtonSize, string> = {
   sm: "h-8 gap-1.5 px-3 text-sm font-semibold",
-  md: "h-10 gap-2 px-5 text-base font-bold",
-  lg: "h-12 gap-2 px-6 text-base font-bold",
+  md: "h-10 gap-2 px-5 text-base font-semibold",
+  lg: "h-12 gap-2 px-6 text-base font-semibold",
 };
 
 const iconSizes: Record<ButtonSize, IconSize> = {

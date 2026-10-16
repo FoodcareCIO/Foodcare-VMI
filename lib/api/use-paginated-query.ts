@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import { useListPagination } from "@/lib/api/use-list-pagination";
 import { useApiQuery } from "@/lib/api/use-query";
@@ -54,8 +54,23 @@ export function usePaginatedQuery<T extends PaginationMeta>(
     }
   }, [data, page, refreshing, setPage]);
 
+  // While the next page is loading, `data` is still the previous response. Report the
+  // page and page size the user just picked, so the pagination controls change at once.
+  const displayData = useMemo(
+    () =>
+      data
+        ? ({
+            ...data,
+            page,
+            limit,
+            totalPages: Math.max(1, Math.ceil(data.total / limit)),
+          } as T)
+        : data,
+    [data, limit, page],
+  );
+
   return {
-    data,
+    data: displayData,
     error,
     initialLoading,
     refreshing,

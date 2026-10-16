@@ -146,16 +146,16 @@ export default function OverviewPage() {
           <ul className="flex flex-1 flex-col justify-center divide-y divide-line">
             <li className="flex items-center justify-between gap-4 py-3 first:pt-0">
               <span className="text-fg-muted">Submitted orders</span>
-              <span className="text-lg font-bold text-fg">{metrics.submittedOrders}</span>
+              <span className="text-lg font-semibold text-fg">{metrics.submittedOrders}</span>
             </li>
             <li className="flex items-center justify-between gap-4 py-3">
               <span className="text-fg-muted">Share of orders submitted</span>
-              <span className="text-lg font-bold text-fg">{completionRate}%</span>
+              <span className="text-lg font-semibold text-fg">{completionRate}%</span>
             </li>
             <li className="flex items-center justify-between gap-4 py-3 last:pb-0">
               <span className="text-fg-muted">Orders with email problems</span>
               <span
-                className={`text-lg font-bold ${metrics.failedExports > 0 ? "text-danger-text" : "text-fg"}`}
+                className={`text-lg font-semibold ${metrics.failedExports > 0 ? "text-danger-text" : "text-fg"}`}
               >
                 {metrics.failedExports}
               </span>

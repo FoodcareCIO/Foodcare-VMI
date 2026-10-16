@@ -18,7 +18,7 @@ export const FieldLabel = ({
   required?: boolean;
   htmlFor?: string;
 }) => (
-  <span className="text-sm font-semibold text-fg">
+  <span className="text-sm font-medium text-fg">
     <label htmlFor={htmlFor}>{label}</label>
     {required ? <span className="text-danger-text"> *</span> : null}
   </span>

@@ -217,7 +217,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
                     onClick={() => setValue(option.value)}
                     className={`flex w-full items-center justify-between px-3.5 py-2 text-left text-base transition hover:bg-subtle ${
                       active
-                        ? "bg-primary-soft font-semibold text-primary-text"
+                        ? "bg-primary-soft font-medium text-primary-text"
                         : "text-fg"
                     }`}
                   >

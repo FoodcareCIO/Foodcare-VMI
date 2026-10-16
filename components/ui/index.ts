@@ -17,7 +17,7 @@ export { FileInput, type FileInputProps } from "@/components/ui/file-input";
 export { Modal, type ModalProps } from "@/components/ui/modal";
 export { ConfirmModal } from "@/components/ui/confirm-modal";
 export type { ConfirmModalProps, ConfirmModalTone } from "@/components/ui/confirm-modal";
-export { Loading, LoadingPage, Skeleton } from "@/components/ui/loading";
+export { LoadingPage, LogoLoader, ThreeDots } from "@/components/ui/loading";
 export {
   Alert,
   BackLink,

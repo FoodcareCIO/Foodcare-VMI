@@ -1,69 +1,80 @@
-import { Icon, type IconSize } from "@/components/ui/icon";
+import { FoodcareLogo } from "@/components/foodcare-logo";
 
-type LoadingSize = "sm" | "md" | "lg";
-
-const sizeMap: Record<LoadingSize, IconSize> = {
-  sm: "sm",
-  md: "md",
-  lg: "lg",
-};
-
-export const Loading = ({
-  size = "md",
-  label,
-  className = "",
-}: {
-  size?: LoadingSize;
-  label?: string;
-  className?: string;
-}) => (
-  <span
-    className={`inline-flex items-center gap-2 text-fg-muted ${className}`}
-    role="status"
-    aria-live="polite"
-  >
-    <Icon icon="mdi:loading" size={sizeMap[size]} className="animate-spin text-accent" />
-    {label ? <span className="text-base">{label}</span> : null}
+/** Three dots that swell one after another. Used while a table loads. */
+export const ThreeDots = ({ label = "Loading" }: { label?: string }) => (
+  <span className="inline-flex items-center gap-2" role="status" aria-live="polite">
+    {[0, 1, 2].map((index) => (
+      <span
+        key={index}
+        className="animate-dot-bounce h-3 w-3 rounded-full bg-accent"
+        style={{ animationDelay: `${index * 160}ms` }}
+        aria-hidden
+      />
+    ))}
+    <span className="sr-only">{label}</span>
   </span>
 );
 
-/** A softly pulsing placeholder block, shown while the real content is loading. */
-export const Skeleton = ({ className = "" }: { className?: string }) => (
-  <div className={`animate-pulse rounded-lg bg-subtle ${className}`} />
+/** The Foodcare logo with a ring turning around it. */
+export const LogoLoader = ({
+  label,
+  size = 88,
+}: {
+  label?: string;
+  /** Width of the whole loader in px; the logo takes about half. */
+  size?: number;
+}) => (
+  <div
+    className="relative flex flex-col items-center"
+    role="status"
+    aria-live="polite"
+    aria-label={label ?? "Loading"}
+  >
+    <div className="relative" style={{ height: size, width: size }}>
+      <FoodcareLogo
+        size={Math.round(size * 0.5)}
+        className="absolute inset-0 m-auto"
+      />
+      {/* A faint full ring with one bright arc that spins around it. */}
+      <span
+        className="absolute inset-0 rounded-full border-[3px] border-line"
+        aria-hidden
+      />
+      <span
+        className="absolute inset-0 animate-spin rounded-full border-[3px] border-transparent border-t-accent [animation-duration:1s]"
+        aria-hidden
+      />
+    </div>
+    {/* Hangs below the ring without taking space, so the logo stays exactly in the middle. */}
+    {label ? (
+      <p className="absolute top-full mt-4 whitespace-nowrap text-sm text-fg-muted">
+        {label}
+      </p>
+    ) : null}
+  </div>
 );
 
 /**
- * Shown while a whole page loads: the outline of a page (title, a card of
- * rows) pulses in place, so the screen does not jump when the data arrives.
- * It fades in after a moment, so quick loads never flash.
+ * Shown while a page loads, centered in the visible area beside the menu. It
+ * fades in after a moment, so quick loads never flash. Pass `compact` for a
+ * block that loads inside a page or a dialog, where it only needs a small area.
  */
 export const LoadingPage = ({
   label = "Loading...",
   className = "",
+  compact = false,
 }: {
   label?: string;
   className?: string;
+  compact?: boolean;
 }) => (
   <div
-    className={`animate-fade-in [animation-delay:150ms] ${className}`}
-    role="status"
-    aria-live="polite"
-    aria-label={label}
+    className={`animate-fade-in flex items-center justify-center [animation-delay:150ms] ${
+      // Fills exactly the space left by the page's own padding (more at the top on phones, for the top bar),
+      // and on desktop is nudged so the logo sits at the true middle of the screen.
+      compact ? "min-h-56" : "min-h-[calc(100dvh-7.5rem)] lg:min-h-[calc(100dvh-5rem)] lg:translate-y-2"
+    } ${className}`}
   >
-    <Skeleton className="mb-3 h-7 w-48" />
-    <Skeleton className="mb-8 h-4 w-80 max-w-full" />
-    <div className="rounded-2xl border border-line bg-surface p-5">
-      <div className="space-y-4">
-        {Array.from({ length: 5 }, (_, index) => (
-          <div key={index} className="flex items-center gap-4">
-            <Skeleton className="h-4 w-1/4" />
-            <Skeleton className="h-4 w-1/3" />
-            <Skeleton className="h-4 flex-1" />
-          </div>
-        ))}
-      </div>
-    </div>
-    <p className="mt-4 text-center text-sm text-fg-muted">{label}</p>
+    <LogoLoader label={label} />
   </div>
 );
-

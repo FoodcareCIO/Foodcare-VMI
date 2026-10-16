@@ -1,12 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import {
+  Alert,
   Badge,
+  Button,
   Card,
   EmptyState,
+  LinkButton,
   LoadingPage,
   PageHeader,
   Pagination,
@@ -14,8 +16,11 @@ import {
   SortableTableHeaderCell,
   Table,
   TableBodySection,
+  TableCell,
+  TableEmptyRow,
   TableHead,
   TableHeaderCell,
+  TableRow,
   TableSearch,
   formatDate,
 } from "@/components/ui";
@@ -29,7 +34,7 @@ import {
 
 const EMAIL_FILTER_OPTIONS = [
   { value: "all", label: "All orders" },
-  { value: "failed", label: "Email failed" },
+  { value: "failed", label: "Email problems" },
 ];
 
 export default function OrdersPage() {
@@ -64,7 +69,7 @@ export default function OrdersPage() {
   };
 
   if (initialLoading) return <LoadingPage label="Loading orders..." />;
-  if (error && !data) return <EmptyState message="Could not load data. Please try again." />;
+  if (error && !data) return <EmptyState message="Could not load orders. Please try again." />;
 
   const orders = data?.orders ?? [];
 
@@ -72,13 +77,13 @@ export default function OrdersPage() {
     <div>
       <PageHeader
         title="Orders"
-        description="Orders submitted by sales reps in the field."
+        description="Orders your sales reps have submitted."
       />
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <TableSearch
           value={search}
           onChange={setSearch}
-          placeholder="Search orders..."
+          placeholder="Search orders"
           disabled={refreshing}
         />
         <div className="w-48">
@@ -86,22 +91,23 @@ export default function OrdersPage() {
             value={emailFilter ?? "all"}
             options={EMAIL_FILTER_OPTIONS}
             onChange={setEmailFilter}
-            aria-label="Filter by email status"
+            aria-label="Show"
             disabled={refreshing}
           />
         </div>
       </div>
       {emailFilter ? (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-base text-amber-900">
-          <span>Showing orders whose email failed or whose report could not be created.</span>
-          <button
-            type="button"
-            onClick={() => setEmailFilter("all")}
-            className="font-medium underline-offset-2 hover:underline"
-          >
-            Show all orders
-          </button>
-        </div>
+        <Alert
+          tone="warning"
+          className="mb-4"
+          action={
+            <Button variant="secondary" size="sm" onClick={() => setEmailFilter("all")}>
+              Show all orders
+            </Button>
+          }
+        >
+          Showing only orders that could not be emailed.
+        </Alert>
       ) : null}
       <Card className="overflow-hidden">
         <TableBodySection loading={refreshing}>
@@ -115,7 +121,7 @@ export default function OrdersPage() {
               >
                 Site
               </SortableTableHeaderCell>
-              <TableHeaderCell>Rep</TableHeaderCell>
+              <TableHeaderCell>Sales rep</TableHeaderCell>
               <SortableTableHeaderCell
                 sortKey="status"
                 activeSort={sort}
@@ -138,11 +144,10 @@ export default function OrdersPage() {
             </TableHead>
             <tbody>
               {orders.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-base text-slate-400">
-                    {emailFilter ? "No orders need attention." : "No orders yet."}
-                  </td>
-                </tr>
+                <TableEmptyRow
+                  colSpan={7}
+                  message={emailFilter ? "No orders need attention." : "No orders yet."}
+                />
               ) : (
                 orders.map((order) => {
                   const sites = order.customer_sites as { name?: string } | null;
@@ -151,40 +156,32 @@ export default function OrdersPage() {
                   } | null;
                   const emailState = order.email_state as OrderEmailState;
                   return (
-                    <tr
-                      key={String(order.id)}
-                      className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
-                    >
-                      <td className="px-4 py-3 font-medium text-slate-800">{sites?.name ?? "-"}</td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {reps?.users?.display_name ?? "-"}
-                      </td>
-                      <td className="px-4 py-3">
+                    <TableRow key={String(order.id)}>
+                      <TableCell strong>{sites?.name ?? "-"}</TableCell>
+                      <TableCell muted>{reps?.users?.display_name ?? "-"}</TableCell>
+                      <TableCell>
                         <Badge value={String(order.status)} />
-                      </td>
-                      <td className="px-4 py-3">
+                      </TableCell>
+                      <TableCell>
                         <Badge value={emailState} label={ORDER_EMAIL_LABELS[emailState]} />
-                      </td>
-                      <td className="px-4 py-3">
+                      </TableCell>
+                      <TableCell>
                         <PhotoCount
                           expected={order.photos_expected as number | null}
                           received={Number(order.photos_received ?? 0)}
                         />
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">
+                      </TableCell>
+                      <TableCell muted nowrap>
                         {formatDate(
                           (order.completed_at ?? order.started_at) as string,
                         )}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link
-                          href={`/orders/${order.id}`}
-                          className="rounded-md px-2 py-1 text-sm font-medium text-emerald-600 hover:bg-emerald-50"
-                        >
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <LinkButton href={`/orders/${order.id}`} variant="ghost" size="sm">
                           View
-                        </Link>
-                      </td>
-                    </tr>
+                        </LinkButton>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
@@ -208,11 +205,11 @@ export default function OrdersPage() {
 }
 
 function PhotoCount({ expected, received }: { expected: number | null; received: number }) {
-  if (expected === null) return <span className="text-slate-600">{received}</span>;
+  if (expected === null) return <span className="text-fg-muted">{received}</span>;
   const missing = received < expected;
   return (
     <span
-      className={missing ? "font-medium text-amber-600" : "text-slate-600"}
+      className={missing ? "font-semibold text-warning-text" : "text-fg-muted"}
       title={missing ? `${expected - received} photo(s) not received yet` : undefined}
     >
       {received}/{expected}

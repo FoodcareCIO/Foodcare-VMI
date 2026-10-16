@@ -1,24 +1,26 @@
 "use client";
 
-import Link from "next/link";
 import { use, useMemo } from "react";
 
 import { RejectForm } from "@/components/reject-form";
 import { OrderEmailCard } from "@/features/orders/order-email-card";
 import { OrderPhotos, type OrderPhoto } from "@/features/orders/order-photos";
 import {
+  Alert,
   Badge,
   Button,
   Card,
   EmptyState,
-  Icon,
   LoadingPage,
-  MetricCard,
   PageHeader,
+  SectionHeader,
   SortableTableHeaderCell,
+  StatCard,
   Table,
+  TableBodySection,
+  TableCell,
   TableHead,
-  TableHeaderCell,
+  TableRow,
   formatDate,
 } from "@/components/ui";
 import { api } from "@/lib/api/client";
@@ -82,67 +84,59 @@ export default function OrderDetailPage({
     window.location.href = result.url;
   }
 
+  const sortHeader = (key: string, label: string) => (
+    <SortableTableHeaderCell
+      sortKey={key}
+      activeSort={sort}
+      activeDir={sortDir}
+      onSort={setSort}
+    >
+      {label}
+    </SortableTableHeaderCell>
+  );
+
   return (
     <div>
       <PageHeader
+        back={{ href: "/orders", label: "Back to orders" }}
         title={sites?.name ?? "Order"}
         description={sites?.address}
         actions={
-          <Link
-            href="/orders"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-base font-semibold text-slate-600 transition hover:bg-slate-100"
-          >
-            <Icon icon="mdi:arrow-left" width={16} height={16} />
-            Back to orders
-          </Link>
+          <>
+            {exportRow?.storage_path ? (
+              <Button
+                icon="mdi:download"
+                onClick={() => void downloadExport()}
+                title={String(exportRow.file_name)}
+              >
+                Download Excel report
+              </Button>
+            ) : (
+              <span className="text-sm text-fg-muted">The Excel report is not ready yet.</span>
+            )}
+            {order.status === "completed" && (
+              <RejectForm orderId={orderId} onSuccess={reload} />
+            )}
+          </>
         }
       />
 
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <MetricCard label="Status" value={<Badge value={String(order.status)} />} />
-        <MetricCard label="Products" value={items.length} />
-        <MetricCard
-          label="Rep"
-          value={
-            <span className="text-base font-medium">
-              {reps?.users?.display_name ?? "-"}
-            </span>
-          }
-        />
-        <MetricCard
+        <StatCard label="Status" value={<Badge value={String(order.status)} />} compact />
+        <StatCard label="Products" value={items.length} />
+        <StatCard label="Sales rep" value={reps?.users?.display_name ?? "-"} compact />
+        <StatCard
           label="Submitted"
-          value={
-            <span className="text-base font-medium">
-              {formatDate(
-                (order.completed_at ?? order.started_at) as string | null,
-              )}
-            </span>
-          }
+          value={formatDate((order.completed_at ?? order.started_at) as string | null)}
+          compact
         />
       </div>
 
       {order.rejection_reason ? (
-        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-base text-red-700">
-          <strong>Rejected:</strong> {String(order.rejection_reason)}
-        </div>
+        <Alert tone="danger" title="This order was rejected" className="mb-6">
+          {String(order.rejection_reason)}
+        </Alert>
       ) : null}
-
-      <div className="mb-6 flex flex-wrap items-center gap-4">
-        {exportRow?.storage_path ? (
-          <Button
-            variant="secondary"
-            icon="mdi:download"
-            onClick={() => void downloadExport()}
-          >
-            Download report ({String(exportRow.file_name)})
-          </Button>
-        ) : (
-          <span className="text-base text-slate-400">Report not ready yet.</span>
-        )}
-        {order.status === "completed" && (
-          <RejectForm orderId={orderId} onSuccess={reload} />
-        )}
-      </div>
 
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <OrderEmailCard
@@ -159,98 +153,37 @@ export default function OrderDetailPage({
         />
       </div>
 
-      <h2 className="mb-3 text-xl tracking-tight text-slate-900">Products in this order</h2>
-      <Card>
+      <SectionHeader title="Products in this order" icon="mdi:package-variant" />
+      <Card className="overflow-hidden">
         {items.length === 0 ? (
-          <EmptyState message="No products in this order." />
+          <EmptyState message="There are no products in this order." />
         ) : (
-          <Table>
-            <TableHead>
-              <SortableTableHeaderCell
-                sortKey="product_sku_snapshot"
-                activeSort={sort}
-                activeDir={sortDir}
-                onSort={setSort}
-              >
-                Product code
-              </SortableTableHeaderCell>
-              <SortableTableHeaderCell
-                sortKey="product_name_snapshot"
-                activeSort={sort}
-                activeDir={sortDir}
-                onSort={setSort}
-              >
-                Product
-              </SortableTableHeaderCell>
-              <SortableTableHeaderCell
-                sortKey="minimum_quantity_snapshot"
-                activeSort={sort}
-                activeDir={sortDir}
-                onSort={setSort}
-              >
-                Minimum
-              </SortableTableHeaderCell>
-              <SortableTableHeaderCell
-                sortKey="current_quantity"
-                activeSort={sort}
-                activeDir={sortDir}
-                onSort={setSort}
-              >
-                On hand
-              </SortableTableHeaderCell>
-              <SortableTableHeaderCell
-                sortKey="suggested_order_quantity"
-                activeSort={sort}
-                activeDir={sortDir}
-                onSort={setSort}
-              >
-                Suggested
-              </SortableTableHeaderCell>
-              <SortableTableHeaderCell
-                sortKey="order_quantity"
-                activeSort={sort}
-                activeDir={sortDir}
-                onSort={setSort}
-              >
-                Order qty
-              </SortableTableHeaderCell>
-              <SortableTableHeaderCell
-                sortKey="unit_of_measure_snapshot"
-                activeSort={sort}
-                activeDir={sortDir}
-                onSort={setSort}
-              >
-                Unit
-              </SortableTableHeaderCell>
-            </TableHead>
-            <tbody>
-              {sortedItems.map((item) => (
-                <tr key={String(item.id)} className="border-b border-slate-100 last:border-0">
-                  <td className="px-4 py-3 text-slate-600">
-                    {String(item.product_sku_snapshot)}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-slate-800">
-                    {String(item.product_name_snapshot)}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {String(item.minimum_quantity_snapshot)}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {String(item.current_quantity)}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {String(item.suggested_order_quantity)}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-slate-800">
-                    {String(item.order_quantity)}
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {String(item.unit_of_measure_snapshot)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <TableBodySection>
+            <Table>
+              <TableHead>
+                {sortHeader("product_sku_snapshot", "Product code")}
+                {sortHeader("product_name_snapshot", "Product")}
+                {sortHeader("minimum_quantity_snapshot", "Minimum")}
+                {sortHeader("current_quantity", "In stock")}
+                {sortHeader("suggested_order_quantity", "Suggested")}
+                {sortHeader("order_quantity", "To order")}
+                {sortHeader("unit_of_measure_snapshot", "Unit")}
+              </TableHead>
+              <tbody>
+                {sortedItems.map((item) => (
+                  <TableRow key={String(item.id)}>
+                    <TableCell muted>{String(item.product_sku_snapshot)}</TableCell>
+                    <TableCell strong>{String(item.product_name_snapshot)}</TableCell>
+                    <TableCell muted>{String(item.minimum_quantity_snapshot)}</TableCell>
+                    <TableCell muted>{String(item.current_quantity)}</TableCell>
+                    <TableCell muted>{String(item.suggested_order_quantity)}</TableCell>
+                    <TableCell strong>{String(item.order_quantity)}</TableCell>
+                    <TableCell muted>{String(item.unit_of_measure_snapshot)}</TableCell>
+                  </TableRow>
+                ))}
+              </tbody>
+            </Table>
+          </TableBodySection>
         )}
       </Card>
     </div>

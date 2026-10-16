@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+/** A search box with a Search button. Pressing Enter works too. */
 export const TableSearch = ({
   value,
   onChange,
-  placeholder = "Search... (Press Enter)",
+  placeholder = "Search",
   disabled = false,
 }: {
   value: string;
@@ -21,25 +23,27 @@ export const TableSearch = ({
     setDraft(value);
   }, [value]);
 
-  const submit = () => {
-    onChange(draft);
-  };
-
   return (
-    <Input
-      value={draft}
-      onChange={(event) => setDraft(event.target.value)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          submit();
-        }
+    <form
+      role="search"
+      className="flex w-full max-w-md items-center gap-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onChange(draft);
       }}
-      prefixIcon="mdi:magnify"
-      placeholder={placeholder}
-      disabled={disabled}
-      aria-label="Search table"
-      wrapperClassName="w-full max-w-sm"
-    />
+    >
+      <Input
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        prefixIcon="mdi:magnify"
+        placeholder={placeholder}
+        disabled={disabled}
+        aria-label={placeholder}
+        wrapperClassName="min-w-0 flex-1"
+      />
+      <Button type="submit" variant="secondary" disabled={disabled}>
+        Search
+      </Button>
+    </form>
   );
 };

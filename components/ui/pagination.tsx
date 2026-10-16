@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, Select } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { DEFAULT_LIMIT } from "@/lib/pagination";
 
 const PAGE_SIZE_OPTIONS = [
@@ -33,14 +34,14 @@ export const Pagination = ({
   const end = Math.min(page * limit, total);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 px-4 py-3">
-      <p className="text-sm text-slate-500">
+    <div className="flex flex-wrap items-center justify-between gap-4 border-t border-line px-4 py-3">
+      <p className="text-sm text-fg-muted">
         Showing {start}–{end} of {total}
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
         {onLimitChange ? (
-          <div className="w-36">
+          <div className="w-40">
             <Select
               value={String(limit)}
               options={PAGE_SIZE_OPTIONS}
@@ -53,7 +54,7 @@ export const Pagination = ({
 
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             icon="mdi:chevron-left"
             disabled={busy || page <= 1}
@@ -61,11 +62,11 @@ export const Pagination = ({
           >
             Previous
           </Button>
-          <span className="min-w-24 text-center text-sm text-slate-600">
+          <span className="min-w-24 text-center text-sm text-fg-muted">
             Page {page} of {Math.max(totalPages, 1)}
           </span>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             icon="mdi:chevron-right"
             iconPosition="right"

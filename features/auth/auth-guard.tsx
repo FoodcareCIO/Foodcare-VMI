@@ -1,15 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Sidebar } from "@/components/sidebar";
-import { LoadingPage } from "@/components/ui";
+import { Loading } from "@/components/ui";
 import { api } from "@/lib/api/client";
 import type { AdminSession } from "@/lib/auth";
 
 export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const [session, setSession] = useState<AdminSession | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,8 +24,8 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <LoadingPage label="Please wait..." />
+      <div className="flex min-h-screen items-center justify-center bg-canvas">
+        <Loading size="lg" label="Signing you in..." />
       </div>
     );
   }
@@ -32,9 +33,14 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   if (!session) return null;
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50">
+    <div className="min-h-screen bg-canvas">
       <Sidebar email={session.email} />
-      <main className="ml-64 h-screen overflow-y-auto p-8">{children}</main>
+      <main className="min-h-screen px-4 pb-12 pt-18 sm:px-6 lg:ml-64 lg:px-8 lg:pt-8">
+        {/* Each page fades in as you move between them. */}
+        <div key={pathname} className="animate-rise-in mx-auto max-w-6xl">
+          {children}
+        </div>
+      </main>
     </div>
   );
 };

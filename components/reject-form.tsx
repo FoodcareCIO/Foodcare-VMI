@@ -21,7 +21,7 @@ export const RejectForm = ({
     event.preventDefault();
 
     if (!reason.trim()) {
-      setFieldError("Rejection reason is required.");
+      setFieldError("Please say why you are rejecting this order.");
       return;
     }
 
@@ -42,43 +42,36 @@ export const RejectForm = ({
   return (
     <>
       <Button
-        variant="outline"
-        size="sm"
+        variant="danger"
         icon="mdi:close-circle-outline"
-        className="border-red-300 text-red-600 hover:bg-red-50"
         onClick={() => setOpen(true)}
       >
         Reject order
       </Button>
 
-      <Modal open={open} title="Reject order" onClose={() => setOpen(false)} size="sm">
+      <Modal open={open} title="Reject this order" onClose={() => setOpen(false)} size="sm">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
           <Textarea
-            label="Rejection reason"
+            label="Reason"
             rows={4}
             value={reason}
             onChange={(event) => {
               setReason(event.target.value);
               if (fieldError) setFieldError(undefined);
             }}
-            placeholder="Explain why this order is being rejected..."
+            placeholder="Tell the rep why this order is being rejected"
             error={fieldError}
           />
-          <div className="flex gap-2">
-            <Button
-              type="submit"
-              variant="danger"
-              loading={busy}
-              icon="mdi:alert-circle-outline"
-            >
-              Confirm rejection
-            </Button>
+          <div className="flex justify-end gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={() => setOpen(false)}
             >
               Cancel
+            </Button>
+            <Button type="submit" variant="danger" loading={busy}>
+              Reject order
             </Button>
           </div>
         </form>

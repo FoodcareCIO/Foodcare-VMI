@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 
 export interface ModalProps {
   open?: boolean;
@@ -27,6 +27,7 @@ export const Modal = ({
   size = "md",
 }: ModalProps) => {
   const [mounted, setMounted] = useState(false);
+  const titleId = useId();
 
   useEffect(() => {
     setMounted(true);
@@ -52,29 +53,29 @@ export const Modal = ({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex cursor-pointer items-center justify-center bg-slate-900/50 p-4"
+      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className={`max-h-[90vh] w-full ${sizeClasses[size]} cursor-default overflow-y-auto rounded-xl bg-white p-6 shadow-2xl`}
+        className={`animate-pop-in max-h-[90vh] w-full ${sizeClasses[size]} cursor-default overflow-y-auto rounded-2xl border border-line bg-surface p-6 shadow-float`}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-title"
+        aria-labelledby={titleId}
       >
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <h3 id="modal-title" className="text-xl text-slate-900">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <h2 id={titleId} className="text-lg text-fg">
             {title}
-          </h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            icon="mdi:close"
+          </h2>
+          <button
+            type="button"
             onClick={onClose}
             aria-label="Close"
-            className="p-1.5!"
-          />
+            className="-mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-fg-muted transition hover:bg-subtle hover:text-fg"
+          >
+            <Icon icon="mdi:close" />
+          </button>
         </div>
         {children}
       </div>

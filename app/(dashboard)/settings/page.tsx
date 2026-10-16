@@ -3,13 +3,14 @@
 import { useState, type FormEvent } from "react";
 
 import {
+  Alert,
   Button,
   Card,
   EmptyState,
-  Icon,
   Input,
   LoadingPage,
   PageHeader,
+  SectionHeader,
   Textarea,
   formatDateTime,
 } from "@/components/ui";
@@ -30,7 +31,7 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <PageHeader title="Settings" description="Where submitted orders are emailed and who is told when emails fail." />
+      <PageHeader title="Settings" description="Choose who receives order emails, and who is told if one fails." />
       <OrderEmailForm key={data.updated_at ?? "new"} settings={data} onSaved={reload} />
     </div>
   );
@@ -70,7 +71,7 @@ function OrderEmailForm({ settings, onSaved }: { settings: OrderEmailSettings; o
         alert_recipients: parseEmailList(lists.alert_recipients).emails,
         support_recipients: parseEmailList(lists.support_recipients).emails,
       });
-      notify.success("Order email settings saved.");
+      notify.success("Settings saved.");
       await onSaved();
     } catch {
       // The shared API client displays the backend error.
@@ -82,23 +83,18 @@ function OrderEmailForm({ settings, onSaved }: { settings: OrderEmailSettings; o
   return (
     <div className="max-w-3xl space-y-4">
       {!settings.main_recipient ? (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-          <Icon icon="mdi:alert-outline" width={22} height={22} className="mt-0.5 text-amber-600" />
-          <div>
-            <p className="text-base font-semibold text-amber-900">No main order email is set</p>
-            <p className="mt-0.5 text-base text-amber-800/80">Submitted orders cannot be emailed until a main order email is saved.</p>
-          </div>
-        </div>
+        <Alert tone="warning" title="No main order email yet">
+          Orders can&apos;t be emailed until you add one below.
+        </Alert>
       ) : null}
 
-      <Card className="p-6">
+      <Card padding="lg">
         <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
-          <div>
-            <h2 className="text-xl text-slate-900">Order email</h2>
-            <p className="mt-1 text-slate-500">
-              Separate several addresses with commas or new lines. Extra addresses for one site are set on that site&apos;s page.
-            </p>
-          </div>
+          <SectionHeader
+            title="Order emails"
+            icon="mdi:email-outline"
+            description="To add several addresses, put each on a new line or separate them with commas. Extra addresses for one site are set on that site's page."
+          />
           <Input
             label="Main order email"
             type="email"
@@ -110,42 +106,42 @@ function OrderEmailForm({ settings, onSaved }: { settings: OrderEmailSettings; o
             }}
             placeholder="orders@company.com.au"
             error={errors.main_recipient}
-            help="Every order is sent here. Required for order emails to be sent."
+            help="Every order is sent here."
           />
           <Textarea
-            label="Copy (CC) addresses"
+            label="Copy to (CC)"
             rows={3}
             value={lists.cc_recipients}
             onChange={(event) => setList("cc_recipients", event.target.value)}
             placeholder="manager@company.com.au"
             error={errors.cc_recipients}
-            help="Receive a copy of every order."
+            help="These people also get a copy of every order."
           />
           <Textarea
-            label="Office alert addresses"
+            label="Office alerts"
             rows={3}
             value={lists.alert_recipients}
             onChange={(event) => setList("alert_recipients", event.target.value)}
             placeholder="office@company.com.au"
             error={errors.alert_recipients}
-            help="Order administrators who are alerted when an order email keeps failing."
+            help="Told when an order email keeps failing."
           />
           <Textarea
-            label="Technical support addresses"
+            label="Technical support"
             rows={3}
             value={lists.support_recipients}
             onChange={(event) => setList("support_recipients", event.target.value)}
             placeholder="support@company.com.au"
             error={errors.support_recipients}
-            help="Alerted when order emails keep failing for a longer time (a system problem)."
+            help="Told when emails keep failing for longer, which usually means a system problem."
           />
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-            <p className="text-sm text-slate-500">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+            <p className="text-sm text-fg-muted">
               {settings.updated_at
                 ? `Last saved ${formatDateTime(settings.updated_at)}${settings.updated_by_name ? ` by ${settings.updated_by_name}` : ""}`
                 : null}
             </p>
-            <Button type="submit" variant="primary" icon="mdi:content-save-outline" loading={busy}>
+            <Button type="submit" icon="mdi:content-save-outline" loading={busy}>
               Save settings
             </Button>
           </div>

@@ -84,7 +84,7 @@ export const RepChangePasswordButton = ({
   return (
     <>
       <Button
-        variant="outline"
+        variant="secondary"
         size="sm"
         icon="mdi:lock-reset"
         title={`Change password for ${repName}`}
@@ -101,8 +101,8 @@ export const RepChangePasswordButton = ({
         size="sm"
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-          <p className="text-sm text-slate-500">
-            Enter the old password before setting a new password for {repName}
+          <p className="text-sm text-fg-muted">
+            Enter {repName}&apos;s old password, then choose a new one
             {repEmail ? ` (${repEmail})` : ""}.
           </p>
 
@@ -116,7 +116,7 @@ export const RepChangePasswordButton = ({
               setOldPassword(event.target.value);
               clearFieldError("currentPassword");
             }}
-            placeholder="Enter the rep's old password"
+            placeholder="The old password"
             error={fieldErrors.currentPassword}
             autoComplete="off"
           />
@@ -145,7 +145,7 @@ export const RepChangePasswordButton = ({
               setConfirmPassword(event.target.value);
               clearFieldError("confirmPassword");
             }}
-            placeholder="Re-enter the new password"
+            placeholder="Type the new password again"
             error={fieldErrors.confirmPassword}
             autoComplete="new-password"
           />
@@ -153,13 +153,13 @@ export const RepChangePasswordButton = ({
           <div className="flex justify-end gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={handleClose}
               disabled={pending}
             >
               Cancel
             </Button>
-            <Button type="submit" variant="secondary" loading={pending}>
+            <Button type="submit" loading={pending}>
               Update password
             </Button>
           </div>

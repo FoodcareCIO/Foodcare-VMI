@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { use, type ReactNode } from "react";
 
 import { EntityManager, type ColumnDef, type FieldDef } from "@/components/entity-manager";
-import { EmptyState, LoadingPage, PageHeader } from "@/components/ui";
+import { EmptyState, LoadingPage, PageHeader, SectionHeader } from "@/components/ui";
 import { SiteOrderEmail, type OrderEmailDefaults } from "@/features/sites/site-order-email";
 import { SiteProductListActions, SiteProductListStatus } from "@/features/sites/site-product-list";
 import { usePaginatedQuery } from "@/lib/api/use-paginated-query";
@@ -52,21 +51,21 @@ export default function SiteDetailPage({ params }: { params: Promise<{ siteId: s
     { key: "is_primary", label: "Primary", variant: "boolean" },
   ];
   const instructionFields: FieldDef[] = [
-    { name: "instruction", label: "Instruction", type: "textarea", required: true }, { name: "title", label: "Title" },
-    { name: "category", label: "Category", type: "select", options: categoryOptions },
-    { name: "sort_order", label: "Display order", type: "number", step: "1" }, { name: "image_url", label: "Image link" },
-    { name: "sensitive", label: "Sensitive", type: "checkbox" },
+    { name: "instruction", label: "Note", type: "textarea", required: true }, { name: "title", label: "Title" },
+    { name: "category", label: "Type of note", type: "select", options: categoryOptions },
+    { name: "sort_order", label: "Order in the list", type: "number", step: "1" }, { name: "image_url", label: "Photo link" },
+    { name: "sensitive", label: "Private", type: "checkbox", help: "Only for internal use." },
   ];
   const instructionColumns: ColumnDef[] = [
-    { key: "sort_order", label: "#" }, { key: "category", label: "Category", variant: "badge" },
-    { key: "title", label: "Title" }, { key: "instruction", label: "Instruction", variant: "truncate" },
-    { key: "sensitive", label: "Sensitive", variant: "boolean" },
+    { key: "sort_order", label: "#" }, { key: "category", label: "Type", variant: "badge" },
+    { key: "title", label: "Title" }, { key: "instruction", label: "Note", variant: "truncate" },
+    { key: "sensitive", label: "Private", variant: "boolean" },
   ];
   const siteProductFields: FieldDef[] = [
     { name: "product_id", label: "Product", type: "select", options: productOptions, required: true, createOnly: true },
-    { name: "minimum_quantity", label: "Minimum quantity", type: "number", step: "0.01", required: true },
-    { name: "unit_of_measure", label: "Unit of measure", required: true },
-    { name: "order_multiple", label: "Order multiple", type: "number", step: "0.01" }, { name: "notes", label: "Notes" },
+    { name: "minimum_quantity", label: "Minimum stock", type: "number", step: "0.01", required: true },
+    { name: "unit_of_measure", label: "Unit", required: true },
+    { name: "order_multiple", label: "Order in multiples of", type: "number", step: "0.01" }, { name: "notes", label: "Notes" },
   ];
   const siteProductColumns: ColumnDef[] = [
     { key: "product_sku", label: "Product code" },
@@ -77,18 +76,19 @@ export default function SiteDetailPage({ params }: { params: Promise<{ siteId: s
 
   return (
     <div>
-      <PageHeader title={siteQuery.data.site.name} description={siteQuery.data.site.address} actions={<Link href="/sites" className="rounded-lg border border-slate-300 px-3 py-2 text-base text-slate-600 hover:bg-slate-100">Back to sites</Link>} />
-      <SiteSection title="Contacts" loading={contacts.initialLoading} error={Boolean(contacts.error && !contacts.data)}>
+      <PageHeader back={{ href: "/sites", label: "Back to sites" }} title={siteQuery.data.site.name} description={siteQuery.data.site.address} />
+      <SiteSection title="Contacts" icon="mdi:account-box-outline" loading={contacts.initialLoading} error={Boolean(contacts.error && !contacts.data)}>
         <EntityManager apiBase="/api/contacts" rows={contacts.data?.rows ?? []} columns={contactColumns} fields={contactFields} createLabel="Add contact" emptyMessage="No contacts yet." hiddenFields={{ site_id: siteId }} onMutate={contacts.reload} refreshing={contacts.refreshing} sort={{ column: contacts.sort, dir: contacts.sortDir, onChange: contacts.setSort }} search={{ value: contacts.search, onChange: contacts.setSearch, placeholder: "Search contacts..." }} />
       </SiteSection>
-      <SiteSection title="Order email" loading={false} error={false}>
+      <SiteSection title="Order email" icon="mdi:email-outline" loading={false} error={false}>
         <SiteOrderEmail key={orderRecipients.join(",")} siteId={siteId} recipients={orderRecipients} orderEmail={siteQuery.data.orderEmail} onSaved={siteQuery.reload} />
       </SiteSection>
-      <SiteSection title="Site instructions" loading={instructions.initialLoading} error={Boolean(instructions.error && !instructions.data)}>
-        <EntityManager apiBase="/api/instructions" rows={instructions.data?.rows ?? []} columns={instructionColumns} fields={instructionFields} createLabel="Add instruction" emptyMessage="No instructions yet." hiddenFields={{ site_id: siteId }} onMutate={instructions.reload} refreshing={instructions.refreshing} sort={{ column: instructions.sort, dir: instructions.sortDir, onChange: instructions.setSort }} search={{ value: instructions.search, onChange: instructions.setSearch, placeholder: "Search instructions..." }} />
+      <SiteSection title="Site notes" icon="mdi:note-text-outline" subtitle="Parking, entry and safety notes that reps see on the tablet." loading={instructions.initialLoading} error={Boolean(instructions.error && !instructions.data)}>
+        <EntityManager apiBase="/api/instructions" rows={instructions.data?.rows ?? []} columns={instructionColumns} fields={instructionFields} createLabel="Add note" emptyMessage="No notes yet." hiddenFields={{ site_id: siteId }} onMutate={instructions.reload} refreshing={instructions.refreshing} sort={{ column: instructions.sort, dir: instructions.sortDir, onChange: instructions.setSort }} search={{ value: instructions.search, onChange: instructions.setSearch, placeholder: "Search notes" }} />
       </SiteSection>
       <SiteSection
         title="Products"
+        icon="mdi:package-variant"
         subtitle={<SiteProductListStatus info={productList.data} />}
         actions={<SiteProductListActions siteId={siteId} siteName={siteQuery.data.site.name} onChanged={reloadProductList} />}
         loading={siteProducts.initialLoading}
@@ -100,16 +100,10 @@ export default function SiteDetailPage({ params }: { params: Promise<{ siteId: s
   );
 }
 
-function SiteSection({ title, subtitle, actions, loading, error, children }: { title: string; subtitle?: ReactNode; actions?: ReactNode; loading: boolean; error: boolean; children: ReactNode }) {
+function SiteSection({ title, subtitle, icon, actions, loading, error, children }: { title: string; subtitle?: ReactNode; icon?: string; actions?: ReactNode; loading: boolean; error: boolean; children: ReactNode }) {
   return (
     <section className="mb-10">
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-xl text-slate-900">{title}</h2>
-          {subtitle ? <div className="mt-1">{subtitle}</div> : null}
-        </div>
-        {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
-      </div>
+      <SectionHeader title={title} icon={icon} description={subtitle} actions={actions} />
       {loading ? <LoadingPage label={`Loading ${title.toLowerCase()}...`} /> : error ? <EmptyState message={`Could not load ${title.toLowerCase()}.`} /> : children}
     </section>
   );

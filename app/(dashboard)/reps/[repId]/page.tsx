@@ -1,20 +1,22 @@
 "use client";
 
-import Link from "next/link";
 import { use, useState } from "react";
 
 import {
   Button,
   Card,
+  EmptyState,
   LoadingPage,
   PageHeader,
-  EmptyState,
   Pagination,
   SortableTableHeaderCell,
   Table,
   TableBodySection,
+  TableCell,
+  TableEmptyRow,
   TableHead,
   TableHeaderCell,
+  TableRow,
   TableSearch,
 } from "@/components/ui";
 import { api } from "@/lib/api/client";
@@ -55,12 +57,12 @@ function AssignmentTableRow({
   };
 
   return (
-    <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-      <td className="px-4 py-3 text-slate-700">{siteName}</td>
-      <td className="px-4 py-3 text-slate-500">{address}</td>
-      <td className="px-4 py-3 text-right">
+    <TableRow>
+      <TableCell strong>{siteName}</TableCell>
+      <TableCell muted>{address}</TableCell>
+      <TableCell className="text-right">
         <Button
-          variant={assigned ? "outline" : "primary"}
+          variant={assigned ? "secondary" : "primary"}
           size="sm"
           loading={busy}
           icon={assigned ? "mdi:link-off" : "mdi:link-variant"}
@@ -68,8 +70,8 @@ function AssignmentTableRow({
         >
           {assigned ? "Unassign" : "Assign"}
         </Button>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -96,28 +98,21 @@ export default function RepAssignmentsPage({
     defaultSort: ASSIGNMENT_DEFAULT_SORT,
   });
 
-  if (initialLoading) return <LoadingPage label="Loading assignments..." />;
-  if (error && !data) return <EmptyState message="Could not load data. Please try again." />;
+  if (initialLoading) return <LoadingPage label="Loading sites..." />;
+  if (error && !data) return <EmptyState message="Could not load sites. Please try again." />;
 
   return (
     <div>
       <PageHeader
-        title="Rep assignments"
-        description="Choose which sites this rep can manage."
-        actions={
-          <Link
-            href="/reps"
-            className="rounded-lg border border-slate-300 px-3 py-2 text-base text-slate-600 hover:bg-slate-100"
-          >
-            Back to reps
-          </Link>
-        }
+        back={{ href: "/reps", label: "Back to sales reps" }}
+        title="Assign sites"
+        description="Choose which sites this rep counts. They will see them in the app."
       />
       <div className="mb-4">
         <TableSearch
           value={search}
           onChange={setSearch}
-          placeholder="Search sites..."
+          placeholder="Search sites"
           disabled={refreshing}
         />
       </div>
@@ -138,11 +133,7 @@ export default function RepAssignmentsPage({
             </TableHead>
             <tbody>
               {!data?.sites.length ? (
-                <tr>
-                  <td colSpan={3} className="px-6 py-12 text-center text-base text-slate-400">
-                    No sites to assign.
-                  </td>
-                </tr>
+                <TableEmptyRow colSpan={3} message="There are no sites to add yet." />
               ) : (
                 data.sites.map((site) => (
                   <AssignmentTableRow

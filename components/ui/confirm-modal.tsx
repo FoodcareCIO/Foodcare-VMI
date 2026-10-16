@@ -1,7 +1,8 @@
 "use client";
 
-import { Button, Modal } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { Modal } from "@/components/ui/modal";
 
 export type ConfirmModalTone = "danger" | "primary" | "warning";
 
@@ -24,17 +25,17 @@ const toneStyles: Record<
 > = {
   danger: {
     icon: "mdi:delete-outline",
-    iconWrap: "bg-red-50 text-red-600",
+    iconWrap: "bg-danger-soft text-danger-text",
     confirmVariant: "danger",
   },
   primary: {
     icon: "mdi:backup-restore",
-    iconWrap: "bg-emerald-50 text-emerald-600",
+    iconWrap: "bg-primary-soft text-primary-text",
     confirmVariant: "primary",
   },
   warning: {
     icon: "mdi:alert-circle-outline",
-    iconWrap: "bg-amber-50 text-amber-600",
+    iconWrap: "bg-warning-soft text-warning-text",
     confirmVariant: "danger",
   },
 };
@@ -59,13 +60,13 @@ export const ConfirmModal = ({
         <div
           className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${styles.iconWrap}`}
         >
-          <Icon icon={icon ?? styles.icon} width={22} height={22} />
+          <Icon icon={icon ?? styles.icon} size="lg" />
         </div>
-        <p className="pt-2 text-base leading-6 text-slate-600">{description}</p>
+        <p className="pt-2 text-base text-fg-muted">{description}</p>
       </div>
 
       <div className="mt-6 flex justify-end gap-2">
-        <Button variant="outline" onClick={onClose} disabled={loading}>
+        <Button variant="secondary" onClick={onClose} disabled={loading}>
           {cancelLabel}
         </Button>
         <Button
@@ -80,6 +81,3 @@ export const ConfirmModal = ({
     </Modal>
   );
 };
-
-/** @deprecated Use `ConfirmModal` instead. */
-export const DeleteModal = ConfirmModal;

@@ -19,7 +19,7 @@ export const SignOutButton = () => {
       variant="ghost"
       fullWidth
       icon="mdi:logout"
-      className="justify-start px-3! py-2! font-normal! text-base! text-slate-300 hover:bg-slate-800! hover:text-white!"
+      className="justify-start text-fg!"
       onClick={() => void handleSignOut()}
     >
       Sign out

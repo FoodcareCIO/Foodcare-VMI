@@ -1,13 +1,11 @@
-import type { ReactNode } from "react";
-
-import { Icon } from "@/components/ui/icon";
+import { Icon, type IconSize } from "@/components/ui/icon";
 
 type LoadingSize = "sm" | "md" | "lg";
 
-const sizeMap: Record<LoadingSize, number> = {
-  sm: 16,
-  md: 24,
-  lg: 32,
+const sizeMap: Record<LoadingSize, IconSize> = {
+  sm: "sm",
+  md: "md",
+  lg: "lg",
 };
 
 export const Loading = ({
@@ -18,26 +16,27 @@ export const Loading = ({
   size?: LoadingSize;
   label?: string;
   className?: string;
-}) => {
-  const dimension = sizeMap[size];
+}) => (
+  <span
+    className={`inline-flex items-center gap-2 text-fg-muted ${className}`}
+    role="status"
+    aria-live="polite"
+  >
+    <Icon icon="mdi:loading" size={sizeMap[size]} className="animate-spin text-accent" />
+    {label ? <span className="text-base">{label}</span> : null}
+  </span>
+);
 
-  return (
-    <span
-      className={`inline-flex items-center gap-2 text-slate-500 ${className}`}
-      role="status"
-      aria-live="polite"
-    >
-      <Icon
-        icon="mdi:loading"
-        width={dimension}
-        height={dimension}
-        className="animate-spin text-emerald-500"
-      />
-      {label ? <span className="text-base">{label}</span> : null}
-    </span>
-  );
-};
+/** A softly pulsing placeholder block, shown while the real content is loading. */
+export const Skeleton = ({ className = "" }: { className?: string }) => (
+  <div className={`animate-pulse rounded-lg bg-subtle ${className}`} />
+);
 
+/**
+ * Shown while a whole page loads: the outline of a page (title, a card of
+ * rows) pulses in place, so the screen does not jump when the data arrives.
+ * It fades in after a moment, so quick loads never flash.
+ */
 export const LoadingPage = ({
   label = "Loading...",
   className = "",
@@ -46,34 +45,25 @@ export const LoadingPage = ({
   className?: string;
 }) => (
   <div
-    className={`flex min-h-48 flex-col items-center justify-center gap-3 ${className}`}
-  >
-    <Loading size="lg" />
-    <p className="text-base text-slate-500">{label}</p>
-  </div>
-);
-
-export const InlineLoadingOverlay = ({ label }: { label?: string }) => (
-  <div
-    className="absolute inset-0 z-10 flex items-center justify-center bg-white/75 backdrop-blur-[1px]"
+    className={`animate-fade-in [animation-delay:150ms] ${className}`}
     role="status"
     aria-live="polite"
+    aria-label={label}
   >
-    <Loading size="md" label={label ?? "Loading..."} />
+    <Skeleton className="mb-3 h-7 w-48" />
+    <Skeleton className="mb-8 h-4 w-80 max-w-full" />
+    <div className="rounded-2xl border border-line bg-surface p-5">
+      <div className="space-y-4">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div key={index} className="flex items-center gap-4">
+            <Skeleton className="h-4 w-1/4" />
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-4 flex-1" />
+          </div>
+        ))}
+      </div>
+    </div>
+    <p className="mt-4 text-center text-sm text-fg-muted">{label}</p>
   </div>
 );
 
-export const LoadingOverlay = ({
-  label,
-  children,
-}: {
-  label?: string;
-  children?: ReactNode;
-}) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-[1px]">
-    <div className="rounded-xl bg-white px-6 py-5 shadow-xl">
-      <Loading size="lg" label={label ?? "Please wait..."} />
-      {children}
-    </div>
-  </div>
-);

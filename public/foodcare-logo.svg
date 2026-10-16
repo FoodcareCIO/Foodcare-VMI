@@ -1,30 +1,48 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none" role="img" aria-label="Foodcare">
   <defs>
     <linearGradient id="fc-bg" x1="4" y1="2" x2="36" y2="38" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#34D399" />
-      <stop offset="1" stop-color="#047857" />
+      <stop stop-color="#1D9BF0" />
+      <stop offset="1" stop-color="#1268B0" />
     </linearGradient>
-    <linearGradient id="fc-leaf" x1="19" y1="19" x2="30" y2="31" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#A7F3D0" />
-      <stop offset="1" stop-color="#6EE7B7" />
+    <linearGradient id="fc-leaf" x1="20" y1="4" x2="30" y2="14" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8FF0C4" />
+      <stop offset="1" stop-color="#2ED3A0" />
     </linearGradient>
   </defs>
 
+  <!-- App tile -->
   <rect width="40" height="40" rx="11" fill="url(#fc-bg)" />
 
+  <!-- Artwork is nudged down so it sits centered in the tile -->
+  <g transform="translate(0 1.6)">
+  <!-- Leaf growing out of the crate: the food -->
   <path
-    d="M13 10.8C13 9.8 13.8 9 14.8 9H25.4C26.3 9 27 9.7 27 10.6C27 11.5 26.3 12.2 25.4 12.2H16.8V17H23.6C24.5 17 25.2 17.7 25.2 18.6C25.2 19.5 24.5 20.2 23.6 20.2H16.8V29.2C16.8 30.2 16 31 15 31C14 31 13.2 30.2 13.2 29.2L13 10.8Z"
-    fill="#FFFFFF"
-  />
-
-  <path
-    d="M22.5 20.8C24.7 19.8 27.4 20.6 28.7 22.7C30 24.8 29.5 27.6 27.5 29.1C25.7 30.4 23.3 30.7 21.2 30C20.7 29.8 20.4 29.3 20.4 28.8C20.5 25.9 20.9 22.4 22.5 20.8Z"
+    d="M19.6 14.2C19 8.6 22.6 5 28.4 4.8C29 10 25.8 13.8 19.6 14.2Z"
     fill="url(#fc-leaf)"
   />
   <path
-    d="M22.9 21.3C22.1 23.4 21.8 25.9 21.7 28.3"
-    stroke="#047857"
+    d="M20.4 13.4C22.2 10.8 24.4 8.6 27 7.2"
+    stroke="#1268B0"
     stroke-width="0.9"
     stroke-linecap="round"
+    opacity="0.55"
   />
+
+  <!-- Crate lid and body: the stock -->
+  <rect x="7" y="14.5" width="26" height="5.5" rx="2.75" fill="#FFFFFF" />
+  <path
+    d="M9.5 21.5H30.5V29C30.5 30.66 29.16 32 27.5 32H12.5C10.84 32 9.5 30.66 9.5 29V21.5Z"
+    fill="#FFFFFF"
+    fill-opacity="0.94"
+  />
+
+  <!-- Check mark: counted -->
+  <path
+    d="M15.2 26.2L18.5 29.2L25 23.2"
+    stroke="#1268B0"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  </g>
 </svg>

@@ -1,40 +1,41 @@
+import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-import { Icon } from "@/components/ui/icon";
+import { Icon, type IconSize } from "@/components/ui/icon";
 
-type ButtonVariant = "primary" | "secondary" | "danger" | "ghost" | "outline";
-type ButtonSize = "sm" | "md" | "lg";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+export type ButtonSize = "sm" | "md" | "lg";
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    "bg-emerald-500 text-slate-950 hover:bg-emerald-400 disabled:hover:bg-emerald-500",
-  secondary:
-    "bg-slate-900 text-white hover:bg-slate-700 disabled:hover:bg-slate-900",
-  danger:
-    "bg-red-600 text-white hover:bg-red-500 disabled:hover:bg-red-600",
-  ghost:
-    "text-slate-500 hover:bg-slate-100 hover:text-slate-800 disabled:hover:bg-transparent",
-  outline:
-    "border border-slate-300 text-slate-600 hover:bg-slate-100 disabled:hover:bg-transparent",
+  primary: "border border-primary bg-primary text-on-primary hover:bg-primary-hover hover:border-primary-hover",
+  secondary: "border border-line-strong bg-surface text-fg hover:bg-subtle",
+  ghost: "border border-transparent text-primary-text hover:bg-primary-soft",
+  danger: "border border-transparent bg-danger-soft text-danger-text hover:border-danger",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "px-2.5 py-1.5 text-sm",
-  md: "px-4 py-2 text-base",
-  lg: "px-5 py-2.5 text-base",
+  sm: "h-8 gap-1.5 px-3 text-sm font-semibold",
+  md: "h-10 gap-2 px-5 text-base font-bold",
+  lg: "h-12 gap-2 px-6 text-base font-bold",
 };
 
-const contentGapClasses: Record<ButtonSize, string> = {
-  sm: "gap-1.5",
-  md: "gap-2",
-  lg: "gap-2",
+const iconSizes: Record<ButtonSize, IconSize> = {
+  sm: "sm",
+  md: "md",
+  lg: "md",
 };
 
-const iconSizes: Record<ButtonSize, number> = {
-  sm: 14,
-  md: 16,
-  lg: 18,
-};
+/** Class names for anything that should look like a button (a real button or a link). */
+export const buttonClasses = ({
+  variant = "primary",
+  size = "md",
+  fullWidth = false,
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  fullWidth?: boolean;
+} = {}) =>
+  `relative inline-flex items-center justify-center whitespace-nowrap rounded-full transition duration-150 active:scale-[0.97] ${variantClasses[variant]} ${sizeClasses[size]} ${fullWidth ? "w-full" : ""}`;
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -61,38 +62,66 @@ export const Button = ({
 }: ButtonProps) => {
   const isDisabled = disabled || loading;
   const iconSize = iconSizes[size];
+  const gap = size === "sm" ? "gap-1.5" : "gap-2";
 
   return (
     <button
       type={type}
       disabled={isDisabled}
       aria-busy={loading}
-      className={`relative inline-flex items-center justify-center rounded-xl font-medium transition ${loading ? "cursor-wait" : isDisabled ? "cursor-not-allowed" : "cursor-pointer"} ${loading ? "" : "disabled:opacity-60"} ${variantClasses[variant]} ${sizeClasses[size]} ${fullWidth ? "w-full" : ""} ${className}`}
+      className={`${buttonClasses({ variant, size, fullWidth })} ${loading ? "" : "disabled:opacity-45"} ${className}`}
       {...props}
     >
-      <span
-        className={`inline-flex items-center justify-center ${contentGapClasses[size]} ${loading ? "invisible" : ""}`}
-      >
-        {icon && iconPosition === "left" && (
-          <Icon icon={icon} width={iconSize} height={iconSize} />
-        )}
+      <span className={`inline-flex items-center justify-center ${gap} ${loading ? "invisible" : ""}`}>
+        {icon && iconPosition === "left" && <Icon icon={icon} size={iconSize} />}
         {children}
-        {icon && iconPosition === "right" && (
-          <Icon icon={icon} width={iconSize} height={iconSize} />
-        )}
+        {icon && iconPosition === "right" && <Icon icon={icon} size={iconSize} />}
       </span>
 
       {loading ? (
         <span className="absolute inset-0 flex items-center justify-center rounded-[inherit]">
-          <Icon
-            icon="mdi:loading"
-            width={iconSize}
-            height={iconSize}
-            className="animate-spin"
-            aria-hidden
-          />
+          <Icon icon="mdi:loading" size={iconSize} className="animate-spin" />
         </span>
       ) : null}
     </button>
+  );
+};
+
+export interface LinkButtonProps {
+  href: string;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  icon?: string;
+  iconPosition?: "left" | "right";
+  fullWidth?: boolean;
+  className?: string;
+  children?: ReactNode;
+}
+
+/** A link that looks exactly like a Button, for actions that go to another page. */
+export const LinkButton = ({
+  href,
+  variant = "secondary",
+  size = "md",
+  icon,
+  iconPosition = "left",
+  fullWidth = false,
+  className = "",
+  children,
+}: LinkButtonProps) => {
+  const iconSize = iconSizes[size];
+  const gap = size === "sm" ? "gap-1.5" : "gap-2";
+
+  return (
+    <Link
+      href={href}
+      className={`${buttonClasses({ variant, size, fullWidth })} ${className}`}
+    >
+      <span className={`inline-flex items-center justify-center ${gap}`}>
+        {icon && iconPosition === "left" && <Icon icon={icon} size={iconSize} />}
+        {children}
+        {icon && iconPosition === "right" && <Icon icon={icon} size={iconSize} />}
+      </span>
+    </Link>
   );
 };

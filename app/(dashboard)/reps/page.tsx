@@ -42,28 +42,28 @@ export default function RepsPage() {
       defaultSort: REP_DEFAULT_SORT,
     });
 
-  if (initialLoading) return <LoadingPage label="Loading reps..." />;
-  if (error && !data) return <EmptyState message="Could not load data. Please try again." />;
+  if (initialLoading) return <LoadingPage label="Loading sales reps..." />;
+  if (error && !data) return <EmptyState message="Could not load sales reps. Please try again." />;
 
   return (
     <div>
       <PageHeader
-        title="Reps"
-        description="Create sales rep accounts and choose which sites each rep can manage."
+        title="Sales reps"
+        description="Add your sales reps and choose which sites each one counts."
       />
       <EntityManager
         apiBase="/api/reps"
         rows={data?.rows ?? []}
         columns={columns}
         fields={fields}
-        createLabel="Add rep"
-        emptyMessage="No reps yet."
-        deleteDescription="This permanently removes the rep's login, so they can no longer sign in to the app. Their past orders are kept."
+        createLabel="Add sales rep"
+        emptyMessage="No sales reps yet."
+        deleteDescription="This removes the rep's login, so they can no longer sign in to the app. Their past orders are kept."
         linkActions={[
           {
-            label: "Assignments",
+            label: "Assign sites",
             hrefTemplate: "/reps/:id",
-            icon: "mdi:link-variant",
+            icon: "mdi:map-marker-outline",
           },
         ]}
         rowActions={(row) => (
@@ -79,7 +79,7 @@ export default function RepsPage() {
         search={{
           value: search,
           onChange: setSearch,
-          placeholder: "Search reps...",
+          placeholder: "Search sales reps",
         }}
         pagination={
           data

@@ -21,7 +21,7 @@ export default function SitesPage() {
   if (query.error && !query.data) return <EmptyState message="Could not load sites. Please try again." />;
   return (
     <div>
-      <PageHeader title="Sites" description="Manage each location, its contacts, instructions, products, and minimum stock." />
+      <PageHeader title="Sites" description="Add your sites, then open one to manage its contacts, notes and products." />
       <EntityManager
         apiBase="/api/sites"
         rows={query.data?.rows ?? []}
@@ -39,7 +39,7 @@ export default function SitesPage() {
         onMutate={query.reload}
         refreshing={query.refreshing}
         sort={{ column: query.sort, dir: query.sortDir, onChange: query.setSort }}
-        search={{ value: query.search, onChange: query.setSearch, placeholder: "Search sites..." }}
+        search={{ value: query.search, onChange: query.setSearch, placeholder: "Search sites" }}
         pagination={query.data ? { page: query.data.page, limit: query.data.limit, total: query.data.total, totalPages: query.data.totalPages, onPageChange: query.setPage, onLimitChange: query.setLimit } : undefined}
       />
     </div>

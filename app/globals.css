@@ -1,53 +1,200 @@
 @import "tailwindcss";
-@import "@fontsource-variable/plus-jakarta-sans";
+
+/*
+ * Foodcare design tokens (admin dashboard).
+ *
+ * The same palette, type scale and radii as the tablet app
+ * (foodcare-vmi-app/src/constants/theme.ts), so both products feel like one.
+ * Components use the semantic utilities defined in @theme below
+ * (bg-surface, text-fg-muted, border-line, bg-primary, ...) and never raw
+ * Tailwind palette colors, so light and dark themes switch automatically.
+ *
+ * The theme is chosen by <html data-theme="light|dark">, which a tiny inline
+ * script in app/layout.tsx sets before the first paint.
+ */
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  color-scheme: light;
+
+  --canvas: #f7f9f9;
+  --surface: #ffffff;
+  --surface-muted: #eff3f4;
+  --line: #e4eaee;
+  --line-strong: #cfd9de;
+
+  --fg: #0f1419;
+  --fg-muted: #536471;
+  --fg-placeholder: #71808c;
+  --on-primary: #ffffff;
+
+  --primary: #1678c8;
+  --primary-hover: #1268b0;
+  --primary-text: #1268b0;
+  --primary-soft: #e8f5fd;
+  --accent: #1d9bf0;
+
+  --success: #00ba7c;
+  --success-text: #007a52;
+  --success-soft: #e3f8f0;
+  --warning: #ffb800;
+  --warning-text: #7a5600;
+  --warning-soft: #fff6d9;
+  --danger: #f4212e;
+  --danger-text: #c0141f;
+  --danger-soft: #fdecee;
+
+  --overlay: rgb(15 20 25 / 0.5);
+  --float-shadow: 0 8px 28px rgb(15 20 25 / 0.16);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --canvas: #000000;
+  --surface: #16181c;
+  --surface-muted: #202327;
+  --line: #2f3336;
+  --line-strong: #42474b;
+
+  --fg: #e7e9ea;
+  --fg-muted: #8b98a5;
+  --fg-placeholder: #6e767d;
+  --on-primary: #ffffff;
+
+  --primary: #1678c8;
+  --primary-hover: #1a8cd8;
+  --primary-text: #4ab3f4;
+  --primary-soft: rgb(29 155 240 / 0.16);
+  --accent: #1d9bf0;
+
+  --success: #00ba7c;
+  --success-text: #2ed3a0;
+  --success-soft: rgb(0 186 124 / 0.16);
+  --warning: #ffd400;
+  --warning-text: #ffd400;
+  --warning-soft: rgb(255 212 0 / 0.14);
+  --danger: #f4212e;
+  --danger-text: #ff6670;
+  --danger-soft: rgb(244 33 46 / 0.16);
+
+  --overlay: rgb(0 0 0 / 0.65);
+  --float-shadow: 0 8px 28px rgb(0 0 0 / 0.6);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Colors */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-subtle: var(--surface-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-placeholder: var(--fg-placeholder);
+  --color-on-primary: var(--on-primary);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-text: var(--primary-text);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-success-text: var(--success-text);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-text: var(--warning-text);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-text: var(--danger-text);
+  --color-danger-soft: var(--danger-soft);
+  --color-overlay: var(--overlay);
+
+  --shadow-float: var(--float-shadow);
+
+  /* Fonts: the system font, like the tablet app */
   --font-sans:
-    "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, "Noto Sans", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* Compact UI text */
-  --text-xs: 0.6875rem;
-  --text-xs--line-height: 1rem;
-  --text-sm: 0.75rem;
-  --text-sm--line-height: 1.125rem;
-  --text-base: 0.8125rem;
-  --text-base--line-height: 1.3rem;
-
-  /* Display headings */
-  --text-lg: 1.25rem;
+  /* Type scale. Identical sizes to the tablet app:
+     xs caption 13 | sm label 14 | base body 15 | subhead 16 | lg heading 18
+     xl title 24 | 2xl metric 28 | 3xl display 30 */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.375rem;
+  --text-subhead: 1rem;
+  --text-subhead--line-height: 1.375rem;
+  --text-lg: 1.125rem;
   --text-lg--line-height: 1.5rem;
   --text-xl: 1.5rem;
-  --text-xl--line-height: 1.75rem;
-  --text-2xl: 1.875rem;
+  --text-xl--line-height: 1.875rem;
+  --text-2xl: 1.75rem;
   --text-2xl--line-height: 2.125rem;
-  --text-3xl: 2.25rem;
-  --text-3xl--line-height: 2.5rem;
-  --text-4xl: 2.75rem;
-  --text-4xl--line-height: 3rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
 
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
+
+  /* Motion */
+  --animate-fade-in: fade-in 160ms ease-out both;
+  --animate-rise-in: rise-in 260ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-pop-in: pop-in 200ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-slide-in-left: slide-in-left 240ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96) translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes slide-in-left {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: none;
+    }
+  }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--canvas);
+  color: var(--fg);
   font-family: var(--font-sans);
   font-size: var(--text-base);
+  line-height: var(--text-base--line-height);
   font-weight: var(--font-weight-normal);
-  line-height: 1.6;
-  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -57,18 +204,23 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-sans);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: -0.03em;
-  line-height: 1.2;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
 }
 
-th {
-  font-weight: var(--font-weight-medium);
-  letter-spacing: 0.02em;
+::selection {
+  background: var(--primary-soft);
+  color: var(--fg);
 }
 
 @layer base {
+  /* One clear focus ring for keyboard users, everywhere. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
   a,
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -78,27 +230,27 @@ th {
     cursor: pointer;
   }
 
-  button:not(:disabled),
-  [role="button"]:not([aria-disabled="true"]) {
-    font-weight: var(--font-weight-medium);
-    letter-spacing: 0.01em;
-  }
-
-  label {
-    font-weight: var(--font-weight-medium);
-    letter-spacing: 0.01em;
-  }
-
-  strong,
-  b {
-    font-weight: var(--font-weight-semibold);
-  }
-
   button:disabled:not([aria-busy="true"]) {
     cursor: not-allowed;
   }
 
   button[aria-busy="true"] {
     cursor: wait;
+  }
+
+  * {
+    scrollbar-color: var(--line-strong) transparent;
+  }
+}
+
+/* People who ask their device for less motion get no movement. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -99,31 +99,61 @@ function database({ authDeleteError, repInsertError } = {}) {
     },
   };
 
-  return { tables, logins, authCalls, from, auth };
+  // delete_sales_rep_data (see the SQL migration) removes the rep's rows and returns their file paths.
+  const rpcCalls = [];
+  const rpc = async (name, args) => {
+    rpcCalls.push([name, args]);
+    const rep = tables.sales_reps.find((r) => r.id === args.p_sales_rep_id);
+    if (!rep) return { data: null, error: { message: 'Rep not found.' } };
+    tables.sales_reps = tables.sales_reps.filter((r) => r !== rep);
+    tables.users = tables.users.filter((u) => u.id !== rep.user_id);
+    return {
+      data: { orders_deleted: 1, attachment_paths: ['r/photo.jpg'], export_paths: ['r/order.xlsx'] },
+      error: null,
+    };
+  };
+  const removedFiles = [];
+  const storage = {
+    from: (bucket) => ({
+      async remove(paths) {
+        removedFiles.push([bucket, paths]);
+        return { data: [], error: null };
+      },
+    }),
+  };
+
+  return { tables, logins, authCalls, rpcCalls, removedFiles, from, auth, rpc, storage };
 }
 
 const row = (db, table, key, value) => db.tables[table].find((r) => r[key] === value);
 
-test('deleting a rep removes their login and keeps their profile for order history', async () => {
+test('deleting a rep removes their login, all their data, and their photo and Excel files', async () => {
   const db = database();
-  await deleteRep(db, 'r1', false);
+  const result = await deleteRep(db, 'r1', false);
   assert.equal(db.logins.has('u1'), false);
-  assert.equal(row(db, 'users', 'id', 'u1').deleted_at, '2026-09-23T00:00:00.000Z');
-  assert.equal(row(db, 'sales_reps', 'id', 'r1').deleted_at, '2026-09-23T00:00:00.000Z');
+  assert.deepEqual(db.rpcCalls, [['delete_sales_rep_data', { p_sales_rep_id: 'r1' }]]);
+  assert.equal(row(db, 'sales_reps', 'id', 'r1'), undefined);
+  assert.equal(row(db, 'users', 'id', 'u1'), undefined);
+  assert.deepEqual(db.removedFiles, [
+    ['vmi-attachments', ['r/photo.jpg']],
+    ['vmi-exports', ['r/order.xlsx']],
+  ]);
+  assert.equal(result.ordersDeleted, 1);
 });
 
-test('a rep stays visible when their login cannot be removed', async () => {
+test('a rep and their data stay when their login cannot be removed', async () => {
   const db = database({ authDeleteError: { status: 500, message: 'Database error deleting user' } });
   await assert.rejects(deleteRep(db, 'r1', false), /Database error deleting user/);
+  assert.deepEqual(db.rpcCalls, []);
   assert.equal(row(db, 'sales_reps', 'id', 'r1').deleted_at, null);
   assert.equal(row(db, 'users', 'id', 'u1').deleted_at, null);
 });
 
-test('deleting a rep whose login is already gone still hides the rep', async () => {
+test('deleting a rep whose login is already gone still deletes their data', async () => {
   const db = database();
   db.logins.delete('u1');
   await deleteRep(db, 'r1', false);
-  assert.equal(row(db, 'sales_reps', 'id', 'r1').deleted_at, '2026-09-23T00:00:00.000Z');
+  assert.equal(row(db, 'sales_reps', 'id', 'r1'), undefined);
 });
 
 test('reps with dashboard access are not deleted', async () => {
@@ -133,10 +163,11 @@ test('reps with dashboard access are not deleted', async () => {
   assert.deepEqual(db.authCalls, []);
 });
 
-test('reps without a login cannot be restored', async () => {
+test('a deleted rep cannot be restored', async () => {
   const db = database();
-  await assert.rejects(deleteRep(db, 'r3', true), /login was removed/);
+  await assert.rejects(deleteRep(db, 'r3', true), /can't be restored/);
   assert.equal(row(db, 'sales_reps', 'id', 'r3').deleted_at, '2026-01-01');
+  assert.deepEqual(db.authCalls, []);
 });
 
 test('a failed rep insert removes the login it just created', async () => {

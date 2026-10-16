@@ -891,45 +891,53 @@ export async function deleteRep(
     .maybeSingle();
   if (repLookupError) throw new Error(repLookupError.message);
   if (!rep) throw new Error("Rep not found.");
+  if (restore) throw new Error("A deleted rep can't be restored. Add them as a new rep instead.");
 
-  if (restore) {
-    const { data: login, error: loginError } = await db.auth.admin.getUserById(rep.user_id);
-    if (loginError && loginError.status !== 404) throw new Error(loginError.message);
-    if (!login?.user) {
-      throw new Error("This rep's login was removed. Add them as a new rep instead.");
-    }
-  } else {
-    const { data: adminAccess, error: adminError } = await db
-      .from("admin_users")
-      .select("user_id")
-      .eq("user_id", rep.user_id)
-      .is("deleted_at", null)
-      .maybeSingle();
-    if (adminError) throw new Error(adminError.message);
-    if (adminAccess) {
-      throw new Error(
-        "This rep also has dashboard access. Remove it under Dashboard access first.",
-      );
-    }
-
-    // Remove the login before hiding the rep, so a failure can be retried.
-    // public.users is kept for order history and only marked deleted.
-    const { error: authError } = await db.auth.admin.deleteUser(rep.user_id);
-    if (authError && authError.status !== 404) throw new Error(authError.message);
-
-    const { error: userError } = await db
-      .from("users")
-      .update({ deleted_at: nowIso() })
-      .eq("id", rep.user_id);
-    if (userError) throw new Error(userError.message);
+  const { data: adminAccess, error: adminError } = await db
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", rep.user_id)
+    .is("deleted_at", null)
+    .maybeSingle();
+  if (adminError) throw new Error(adminError.message);
+  if (adminAccess) {
+    throw new Error("This rep also has dashboard access. Remove it under Team access first.");
   }
 
-  const { error } = await db
-    .from("sales_reps")
-    .update({ deleted_at: restore ? null : nowIso() })
-    .eq("id", id);
-  if (error) throw new Error(error.message);
-  return { ok: true };
+  // 1. The login first, so the rep is signed out everywhere. If a later step
+  //    fails, deleting again retries (a login that is already gone is fine).
+  const { error: authError } = await db.auth.admin.deleteUser(rep.user_id);
+  if (authError && authError.status !== 404) throw new Error(authError.message);
+
+  // 2. All of the rep's data, in one transaction: orders (items, photos,
+  //    exports), assignments, tablets, sync/audit rows, rep and user rows.
+  const { data: deleted, error: deleteError } = await db.rpc("delete_sales_rep_data", {
+    p_sales_rep_id: id,
+  });
+  if (deleteError) throw new Error(deleteError.message);
+  const result = deleted as DeletedRepData;
+
+  // 3. The photo and Excel files of those orders.
+  await removeStorageFiles(db, "vmi-attachments", result.attachment_paths);
+  await removeStorageFiles(db, "vmi-exports", result.export_paths);
+
+  return { ok: true, ordersDeleted: result.orders_deleted };
+}
+
+interface DeletedRepData {
+  orders_deleted: number;
+  attachment_paths: string[];
+  export_paths: string[];
+}
+
+async function removeStorageFiles(db: SupabaseClient, bucket: string, paths: string[]) {
+  // The database rows are already gone, so a failure here only leaves unreachable files.
+  for (let start = 0; start < paths.length; start += 100) {
+    const { error } = await db.storage.from(bucket).remove(paths.slice(start, start + 100));
+    if (error) {
+      throw new Error(`The rep was deleted, but some files could not be removed: ${error.message}`);
+    }
+  }
 }
 
 export async function getRepAssignments(

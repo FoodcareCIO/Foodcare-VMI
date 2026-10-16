@@ -1,24 +1,25 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo } from "react";
 
+import { OrderStatusChart } from "@/components/overview/overview-parts";
 import {
-  CatalogBars,
-  OrderStatusChart,
-  OverviewStatCard,
-} from "@/components/overview/overview-parts";
-import {
+  Alert,
   Badge,
   Card,
   EmptyState,
-  Icon,
+  LinkButton,
   LoadingPage,
   PageHeader,
+  SectionHeader,
   SortableTableHeaderCell,
+  StatCard,
   Table,
+  TableBodySection,
+  TableCell,
   TableHead,
   TableHeaderCell,
+  TableRow,
   formatDate,
 } from "@/components/ui";
 import { useClientTableSort } from "@/lib/api/use-client-table-sort";
@@ -79,7 +80,7 @@ export default function OverviewPage() {
   }
 
   if (error || !data) {
-    return <EmptyState message="Could not load overview. Please try again." />;
+    return <EmptyState message="Could not load the overview. Please try again." />;
   }
 
   const { metrics, statusBreakdown } = data;
@@ -90,211 +91,142 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title="Overview"
-        description={todayLabel}
-        actions={
-          <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            </span>
-            Up to date
-          </div>
-        }
-      />
+      <PageHeader title="Overview" description={todayLabel} />
 
-      {data.orderEmailMissing ? (
-        <Link
-          href="/settings"
-          className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 transition hover:border-amber-300 hover:bg-amber-100/60"
-        >
-          <Icon icon="mdi:email-alert-outline" width={22} height={22} className="mt-0.5 text-amber-600" />
-          <div>
-            <p className="text-base font-semibold text-amber-900">No main order email is set</p>
-            <p className="mt-0.5 text-base text-amber-800/80">
-              Submitted orders cannot be emailed until a main order email is saved in Settings.
-            </p>
-          </div>
-          <span className="ml-auto shrink-0 text-base font-medium text-amber-900">Open settings</span>
-        </Link>
-      ) : null}
+      {data.orderEmailMissing || metrics.failedExports > 0 ? (
+        <div className="space-y-3">
+          {data.orderEmailMissing ? (
+            <Alert
+              tone="warning"
+              title="No main order email yet"
+              action={
+                <LinkButton href="/settings" variant="secondary" size="sm">
+                  Go to Settings
+                </LinkButton>
+              }
+            >
+              Orders can&apos;t be emailed until you add a main order email in Settings.
+            </Alert>
+          ) : null}
 
-      {metrics.failedExports > 0 ? (
-        <Link
-          href="/orders?email=failed"
-          className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 transition hover:border-amber-300 hover:bg-amber-100/60"
-        >
-          <Icon icon="mdi:alert-outline" width={22} height={22} className="mt-0.5 text-amber-600" />
-          <div>
-            <p className="text-base font-semibold text-amber-900">
-              {metrics.failedExports} report{metrics.failedExports === 1 ? "" : "s"} need attention
-            </p>
-            <p className="mt-0.5 text-base text-amber-800/80">
-              Some order reports could not be created or sent. Open those orders to see the error or resend the email.
-            </p>
-          </div>
-          <span className="ml-auto shrink-0 text-base font-medium text-amber-900">View orders</span>
-        </Link>
+          {metrics.failedExports > 0 ? (
+            <Alert
+              tone="warning"
+              title={
+                metrics.failedExports === 1
+                  ? "1 order could not be emailed"
+                  : `${metrics.failedExports} orders could not be emailed`
+              }
+              action={
+                <LinkButton href="/orders?email=failed" variant="secondary" size="sm">
+                  View orders
+                </LinkButton>
+              }
+            >
+              Open them to see what went wrong and try again.
+            </Alert>
+          ) : null}
+        </div>
       ) : null}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <OverviewStatCard
-          label="Sites"
-          value={metrics.sites}
-          icon="mdi:map-marker-outline"
-          href="/sites"
-          accent="sky"
-        />
-        <OverviewStatCard
-          label="Products"
-          value={metrics.products}
-          icon="mdi:package-variant"
-          href="/products"
-          accent="violet"
-        />
-        <OverviewStatCard
-          label="Sales reps"
-          value={metrics.reps}
-          icon="mdi:account-group-outline"
-          href="/reps"
-          accent="amber"
-        />
+        <StatCard label="Sites" value={metrics.sites} icon="mdi:map-marker-outline" href="/sites" />
+        <StatCard label="Products" value={metrics.products} icon="mdi:package-variant" href="/products" />
+        <StatCard label="Sales reps" value={metrics.reps} icon="mdi:account-group-outline" href="/reps" />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card className="rounded-3xl! p-6">
-          <div className="mb-5 flex items-center gap-2">
-            <Icon icon="mdi:chart-donut" width={20} height={20} className="text-emerald-600" />
-            <h2 className="text-lg leading-none! text-slate-900">Order status</h2>
-          </div>
+        <Card padding="lg">
+          <SectionHeader title="Orders by status" icon="mdi:chart-donut" />
           <OrderStatusChart breakdown={statusBreakdown} />
         </Card>
 
-        <Card className="rounded-3xl! p-6">
-          <div className="mb-5 flex items-center gap-2">
-            <Icon icon="mdi:chart-bar" width={20} height={20} className="text-sky-600" />
-            <h2 className="text-lg text-slate-900">Your business at a glance</h2>
-          </div>
-          <CatalogBars
-            sites={metrics.sites}
-            products={metrics.products}
-            reps={metrics.reps}
-          />
+        <Card padding="lg" className="flex flex-col">
+          <SectionHeader title="Order summary" icon="mdi:clipboard-text-outline" />
+          <ul className="flex flex-1 flex-col justify-center divide-y divide-line">
+            <li className="flex items-center justify-between gap-4 py-3 first:pt-0">
+              <span className="text-fg-muted">Submitted orders</span>
+              <span className="text-lg font-bold text-fg">{metrics.submittedOrders}</span>
+            </li>
+            <li className="flex items-center justify-between gap-4 py-3">
+              <span className="text-fg-muted">Share of orders submitted</span>
+              <span className="text-lg font-bold text-fg">{completionRate}%</span>
+            </li>
+            <li className="flex items-center justify-between gap-4 py-3 last:pb-0">
+              <span className="text-fg-muted">Orders with email problems</span>
+              <span
+                className={`text-lg font-bold ${metrics.failedExports > 0 ? "text-danger-text" : "text-fg"}`}
+              >
+                {metrics.failedExports}
+              </span>
+            </li>
+          </ul>
         </Card>
-
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-              <Icon icon="mdi:check-circle-outline" width={22} height={22} />
-            </span>
-            <div className="flex flex-col gap-1">
-              <p className="text-base font-medium text-slate-500">Orders completed</p>
-              <p className="text-xl font-bold tracking-tight text-slate-900">{metrics.submittedOrders}</p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-600">
-              <Icon icon="mdi:percent-outline" width={22} height={22} />
-            </span>
-            <div className="flex flex-col gap-1">
-              <p className="text-base font-medium text-slate-500">Percent submitted</p>
-              <p className="text-xl font-bold tracking-tight text-slate-900">{completionRate}%</p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
-              <Icon icon="mdi:close" width={22} height={22} />
-            </span>
-            <div className="flex flex-col gap-1">
-              <p className="text-base font-medium text-slate-500">Report issues</p>
-              <p className="text-xl font-bold tracking-tight text-slate-900">{metrics.failedExports}</p>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div>
-        <div className="mb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Icon icon="mdi:history" width={20} height={20} className="text-slate-400" />
-            <h2 className="text-xl text-slate-900">Recent orders</h2>
-          </div>
-          <Link
-            href="/orders"
-            className="inline-flex items-center gap-1 text-base font-medium text-emerald-600 hover:text-emerald-700"
-          >
-            View all
-            <Icon icon="mdi:arrow-right" width={16} height={16} />
-          </Link>
-        </div>
-        <Card>
+        <SectionHeader
+          title="Recent orders"
+          icon="mdi:history"
+          actions={
+            <LinkButton href="/orders" variant="ghost" size="sm" icon="mdi:arrow-right" iconPosition="right">
+              View all
+            </LinkButton>
+          }
+        />
+        <Card className="overflow-hidden">
           {recent.length === 0 ? (
-            <EmptyState message="No orders yet." />
+            <EmptyState message="No orders yet. They will show up here once a rep submits one." />
           ) : (
-            <Table>
-              <TableHead>
-                <SortableTableHeaderCell
-                  sortKey="site"
-                  activeSort={sort}
-                  activeDir={sortDir}
-                  onSort={setSort}
-                >
-                  Site
-                </SortableTableHeaderCell>
-                <SortableTableHeaderCell
-                  sortKey="status"
-                  activeSort={sort}
-                  activeDir={sortDir}
-                  onSort={setSort}
-                >
-                  Status
-                </SortableTableHeaderCell>
-                <SortableTableHeaderCell
-                  sortKey="date"
-                  activeSort={sort}
-                  activeDir={sortDir}
-                  onSort={setSort}
-                >
-                  Date
-                </SortableTableHeaderCell>
-                <TableHeaderCell />
-              </TableHead>
-              <tbody>
-                {sortedRecent.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="border-b border-slate-100 last:border-0 transition hover:bg-slate-50"
+            <TableBodySection>
+              <Table>
+                <TableHead>
+                  <SortableTableHeaderCell
+                    sortKey="site"
+                    activeSort={sort}
+                    activeDir={sortDir}
+                    onSort={setSort}
                   >
-                    <td className="px-4 py-3 font-medium text-slate-800">
-                      {order.customer_sites?.name ?? "-"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge value={order.status} />
-                    </td>
-                    <td className="px-4 py-3 text-slate-600">
-                      {formatDate(order.completed_at ?? order.started_at)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Link
-                        href={`/orders/${order.id}`}
-                        className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium text-emerald-600 hover:bg-emerald-50"
-                      >
-                        Open
-                        <Icon icon="mdi:open-in-new" width={14} height={14} />
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+                    Site
+                  </SortableTableHeaderCell>
+                  <SortableTableHeaderCell
+                    sortKey="status"
+                    activeSort={sort}
+                    activeDir={sortDir}
+                    onSort={setSort}
+                  >
+                    Status
+                  </SortableTableHeaderCell>
+                  <SortableTableHeaderCell
+                    sortKey="date"
+                    activeSort={sort}
+                    activeDir={sortDir}
+                    onSort={setSort}
+                  >
+                    Date
+                  </SortableTableHeaderCell>
+                  <TableHeaderCell />
+                </TableHead>
+                <tbody>
+                  {sortedRecent.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell strong>{order.customer_sites?.name ?? "-"}</TableCell>
+                      <TableCell>
+                        <Badge value={order.status} />
+                      </TableCell>
+                      <TableCell muted nowrap>
+                        {formatDate(order.completed_at ?? order.started_at)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <LinkButton href={`/orders/${order.id}`} variant="ghost" size="sm">
+                          Open
+                        </LinkButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </tbody>
+              </Table>
+            </TableBodySection>
           )}
         </Card>
       </div>

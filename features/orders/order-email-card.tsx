@@ -2,7 +2,15 @@
 
 import { useState, type ReactNode } from "react";
 
-import { Badge, Button, Card, ConfirmModal, formatDate } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  ConfirmModal,
+  DescriptionList,
+  SectionHeader,
+  formatDate,
+} from "@/components/ui";
 import { api } from "@/lib/api/client";
 import { notify } from "@/lib/notifications";
 import { ORDER_EMAIL_LABELS, type OrderEmailState } from "@/lib/order-email";
@@ -43,44 +51,40 @@ export function OrderEmailCard({
 
   const rows: [string, ReactNode][] = [
     ["Status", <Badge key="status" value={state} label={ORDER_EMAIL_LABELS[state]} />],
-    ["To", recipients.length > 0 ? recipients.join(", ") : <span className="text-slate-400">Set when the email is sent</span>],
+    ["To", recipients.length > 0 ? recipients.join(", ") : <span className="text-fg-muted">Set when the email is sent</span>],
     ["Copy (CC)", cc.length > 0 ? cc.join(", ") : "-"],
     ["Sent", formatDate(exportRow?.emailed_at)],
     ["Attempts", exportRow?.email_attempts ?? 0],
   ];
   if (retrying && exportRow?.next_email_attempt_at) {
-    rows.push(["Next retry", formatDate(exportRow.next_email_attempt_at)]);
+    rows.push(["Next try", formatDate(exportRow.next_email_attempt_at)]);
   }
   if (exportRow?.resend_requested_at) rows.push(["Resend requested", formatDate(exportRow.resend_requested_at)]);
-  if (exportRow?.office_alerted_at) rows.push(["Office alerted", formatDate(exportRow.office_alerted_at)]);
+  if (exportRow?.office_alerted_at) rows.push(["Office told", formatDate(exportRow.office_alerted_at)]);
   if (exportRow?.last_error && state !== "sent") {
-    rows.push(["Last error", <span key="error" className="text-red-700">{exportRow.last_error}</span>]);
+    rows.push(["Problem", <span key="error" className="text-danger-text">{exportRow.last_error}</span>]);
   }
 
   return (
-    <Card className="p-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-xl text-slate-900">Email</h2>
-        {orderStatus === "completed" ? (
-          <Button variant="outline" size="sm" icon="mdi:email-sync-outline" onClick={() => setConfirming(true)}>
-            Resend email
-          </Button>
-        ) : null}
-      </div>
-      <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2.5 text-base">
-        {rows.map(([label, value]) => (
-          <div key={label} className="contents">
-            <dt className="text-slate-500">{label}</dt>
-            <dd className="break-words text-slate-800">{value}</dd>
-          </div>
-        ))}
-      </dl>
+    <Card padding="md">
+      <SectionHeader
+        title="Email"
+        icon="mdi:email-outline"
+        actions={
+          orderStatus === "completed" ? (
+            <Button variant="secondary" size="sm" icon="mdi:email-sync-outline" onClick={() => setConfirming(true)}>
+              Send again
+            </Button>
+          ) : null
+        }
+      />
+      <DescriptionList rows={rows} />
       <ConfirmModal
         open={confirming}
         tone="primary"
         icon="mdi:email-sync-outline"
-        title="Resend order email"
-        confirmLabel="Resend email"
+        title="Send this order again?"
+        confirmLabel="Send again"
         loading={busy}
         onClose={() => {
           if (!busy) setConfirming(false);
@@ -88,8 +92,8 @@ export function OrderEmailCard({
         onConfirm={resend}
         description={
           state === "sent"
-            ? "This order was already emailed. Send it again to the current order addresses? The email will be sent within a minute."
-            : "Send this order email again to the current order addresses? The email will be sent within a minute."
+            ? "This order was already emailed. Send it again to the current order addresses? It will go out within a minute."
+            : "Send this order to the current order addresses? It will go out within a minute."
         }
       />
     </Card>

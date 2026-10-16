@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
-import { Button, Icon, Textarea } from "@/components/ui";
+import { Alert, Button, Card, LinkButton, Textarea } from "@/components/ui";
 import { api } from "@/lib/api/client";
 import { notify } from "@/lib/notifications";
 import { emailListError, parseEmailList } from "@/lib/validation";
@@ -37,7 +36,7 @@ export function SiteOrderEmail({
     setBusy(true);
     try {
       await api.patch(`/api/sites/${siteId}`, { order_recipients: parsed.emails });
-      notify.success("Order addresses for this site saved.");
+      notify.success("Order emails for this site saved.");
       await onSaved();
     } catch {
       // The shared API client displays the backend error.
@@ -47,33 +46,37 @@ export function SiteOrderEmail({
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <Card padding="md">
       {orderEmail.main_recipient ? (
-        <p className="text-slate-700">
-          Orders for this site go to: <strong className="font-semibold">{orderEmail.main_recipient}</strong>
+        <p className="text-base text-fg">
+          Orders for this site go to <strong>{orderEmail.main_recipient}</strong>
           {recipients.length > 0 ? (
             <>
-              {" "}+ <strong className="font-semibold">{recipients.join(", ")}</strong>
+              {" "}and <strong>{recipients.join(", ")}</strong>
             </>
           ) : null}
-          {orderEmail.cc_recipients.length > 0 ? <> · Copy: {orderEmail.cc_recipients.join(", ")}</> : null}
+          {orderEmail.cc_recipients.length > 0 ? (
+            <span className="text-fg-muted"> · Copy to {orderEmail.cc_recipients.join(", ")}</span>
+          ) : null}
+          .
         </p>
       ) : (
-        <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
-          <Icon icon="mdi:alert-outline" width={20} height={20} className="mt-0.5 shrink-0 text-amber-600" />
-          <p>
-            No main order address is set, so orders cannot be emailed.{" "}
-            <Link href="/settings" className="font-medium underline-offset-2 hover:underline">
-              Set it in Settings
-            </Link>
-            .
-          </p>
-        </div>
+        <Alert
+          tone="warning"
+          title="No main order email yet"
+          action={
+            <LinkButton href="/settings" variant="secondary" size="sm">
+              Go to Settings
+            </LinkButton>
+          }
+        >
+          Orders can&apos;t be emailed until you add one.
+        </Alert>
       )}
 
       <Textarea
         wrapperClassName="mt-4"
-        label="Extra addresses for this site"
+        label="Extra email addresses for this site"
         rows={3}
         value={draft}
         onChange={(event) => {
@@ -82,13 +85,13 @@ export function SiteOrderEmail({
         }}
         placeholder="manager@customer.com.au"
         error={error}
-        help="These addresses receive this site's orders in addition to the main order address. Separate addresses with commas or new lines."
+        help="These people also get this site's orders. Put each address on a new line, or separate them with commas."
       />
       <div className="mt-3 flex justify-end">
-        <Button variant="secondary" loading={busy} disabled={!dirty} onClick={save}>
-          Save addresses
+        <Button loading={busy} disabled={!dirty} onClick={save}>
+          Save
         </Button>
       </div>
-    </div>
+    </Card>
   );
 }

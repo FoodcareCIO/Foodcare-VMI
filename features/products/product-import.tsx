@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 
-import { Button, Icon, Modal } from "@/components/ui";
+import {
+  Alert,
+  Button,
+  CompactCell,
+  CompactRow,
+  CompactTable,
+  FileInput,
+  Modal,
+  StatTile,
+} from "@/components/ui";
 import { ApiError, api } from "@/lib/api/client";
 import { notify } from "@/lib/notifications";
 import type {
@@ -94,71 +103,63 @@ export function ProductImport({ onImported }: { onImported: () => void | Promise
 
   return (
     <>
-      <Button variant="outline" icon="mdi:file-upload-outline" onClick={() => setOpen(true)}>
-        Import Excel/CSV
+      <Button variant="secondary" icon="mdi:file-upload-outline" onClick={() => setOpen(true)}>
+        Import from Excel or CSV
       </Button>
 
       <Modal open={open} title="Import products" size="lg" onClose={close}>
         {result ? (
           <div className="space-y-5">
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
-              <div className="flex items-start gap-3">
-                <Icon icon="mdi:check-circle-outline" width={24} height={24} className="text-emerald-600" />
-                <div>
-                  <h4 className="text-lg text-emerald-900">Import complete</h4>
-                  <p className="mt-1 text-emerald-800">{result.imported} products were processed successfully.</p>
-                </div>
-              </div>
-            </div>
+            <Alert tone="success" title="Import complete">
+              {result.imported} product{result.imported === 1 ? " was" : "s were"} added or updated.
+            </Alert>
             <Summary created={result.created} updated={result.updated} restored={result.restored} />
             <div className="flex justify-end">
-              <Button variant="secondary" onClick={close}>Done</Button>
+              <Button onClick={close}>Done</Button>
             </div>
           </div>
         ) : (
           <div className="space-y-5">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-600">
+            <Alert tone="neutral">
               <p>
-                Upload a product catalogue in <strong>.xlsx</strong> or <strong>.csv</strong> format to add new
-                products or update existing ones by product code. This does not change any site&apos;s product list.
+                Upload a list of products as an <strong>Excel (.xlsx)</strong> or <strong>.csv</strong> file. New
+                products are added, and existing ones (matched by product code) are updated. This does not change
+                what any site stocks.
               </p>
               <p className="mt-2">
-                To change a customer&apos;s list, open <Link href="/sites" className="font-medium text-emerald-700 hover:underline">Sites</Link> →
-                the site → <strong>Upload site product list</strong>.
+                To change the products at one site, open{" "}
+                <Link href="/sites" className="font-semibold text-primary-text hover:underline">
+                  Sites
+                </Link>
+                , choose the site, then choose <strong>Upload product list</strong>.
               </p>
-              <Button variant="ghost" size="sm" icon="mdi:download" className="mt-2 -ml-2" onClick={downloadTemplate}>
-                Download CSV template
+              <Button variant="ghost" size="sm" icon="mdi:download" className="mt-2 -ml-3" onClick={downloadTemplate}>
+                Download a CSV template
               </Button>
-            </div>
+            </Alert>
 
-            <div>
-              <label htmlFor="product-import-file" className="mb-1 block text-slate-700">Spreadsheet</label>
-              <input
-                ref={inputRef}
-                id="product-import-file"
-                type="file"
-                accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
-                disabled={busy}
-                onChange={(event) => selectFile(event.target.files?.[0])}
-                className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-slate-700"
-              />
-              <p className="mt-1 text-sm text-slate-500">Maximum 5 MB and 5,000 product rows.</p>
-            </div>
+            <FileInput
+              ref={inputRef}
+              id="product-import-file"
+              label="Your file"
+              accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
+              disabled={busy}
+              onFile={selectFile}
+              help="Up to 5 MB and 5,000 products."
+            />
 
-            {previewError ? (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">{previewError}</div>
-            ) : null}
+            {previewError ? <Alert tone="danger">{previewError}</Alert> : null}
             {preview ? <PreviewDetails preview={preview} /> : null}
 
-            <div className="flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-4">
+            <div className="flex flex-wrap justify-end gap-2 border-t border-line pt-4">
               <Button variant="ghost" onClick={close} disabled={busy}>Cancel</Button>
               {!preview ? (
-                <Button variant="secondary" loading={busy} disabled={!file} onClick={previewFile}>Preview import</Button>
+                <Button loading={busy} disabled={!file} onClick={previewFile}>Check file</Button>
               ) : (
                 <>
-                  <Button variant="outline" disabled={busy} onClick={() => setPreview(null)}>Choose another file</Button>
-                  <Button variant="secondary" loading={busy} disabled={!preview.canImport} onClick={importFile}>
-                    Import {preview.validRows} products
+                  <Button variant="secondary" disabled={busy} onClick={() => setPreview(null)}>Choose another file</Button>
+                  <Button loading={busy} disabled={!preview.canImport} onClick={importFile}>
+                    Import {preview.validRows} product{preview.validRows === 1 ? "" : "s"}
                   </Button>
                 </>
               )}
@@ -173,12 +174,9 @@ export function ProductImport({ onImported }: { onImported: () => void | Promise
 function Summary({ created, updated, restored }: { created: number; updated: number; restored: number }) {
   return (
     <div className="grid grid-cols-3 gap-3">
-      {[["New", created], ["Updated", updated], ["Restored", restored]].map(([label, value]) => (
-        <div key={String(label)} className="rounded-xl border border-slate-200 p-3 text-center">
-          <div className="text-2xl font-semibold text-slate-900">{value}</div>
-          <div className="text-sm text-slate-500">{label}</div>
-        </div>
-      ))}
+      <StatTile label="New" value={created} tone="success" />
+      <StatTile label="Updated" value={updated} tone="info" />
+      <StatTile label="Brought back" value={restored} />
     </div>
   );
 }
@@ -187,52 +185,43 @@ function PreviewDetails({ preview }: { preview: ProductImportPreview }) {
   return (
     <div className="space-y-4">
       <div>
-        <h4 className="text-lg text-slate-900">Preview</h4>
-        <p className="text-sm text-slate-500">
-          {preview.fileName} · {preview.totalRows} product rows
+        <h3 className="text-lg text-fg">What will happen</h3>
+        <p className="text-sm text-fg-muted">
+          {preview.fileName} · {preview.totalRows} product{preview.totalRows === 1 ? "" : "s"}
         </p>
       </div>
       <Summary created={preview.createCount} updated={preview.updateCount} restored={preview.restoreCount} />
 
       {preview.invalidRows > 0 ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
-          <h5 className="font-semibold text-red-900">Fix {preview.invalidRows} invalid row{preview.invalidRows === 1 ? "" : "s"} before importing</h5>
-          <ul className="mt-2 max-h-44 list-disc space-y-1 overflow-y-auto pl-5 text-sm text-red-800">
+        <Alert
+          tone="danger"
+          title={`Fix ${preview.invalidRows} row${preview.invalidRows === 1 ? "" : "s"} in your file before importing`}
+        >
+          <ul className="mt-1 max-h-44 list-disc space-y-1 overflow-y-auto pl-5 text-sm">
             {preview.errors.map((error, index) => (
               <li key={`${error.row}-${error.field ?? "file"}-${index}`}>Row {error.row}: {error.message}</li>
             ))}
           </ul>
-          {preview.errorsTruncated ? <p className="mt-2 text-sm text-red-700">Only the first 100 errors are shown.</p> : null}
-        </div>
+          {preview.errorsTruncated ? <p className="mt-2 text-sm">Only the first 100 problems are shown.</p> : null}
+        </Alert>
       ) : null}
 
       {preview.sample.length > 0 ? (
-        <div className="overflow-hidden rounded-xl border border-slate-200">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-600">
-                <tr>
-                  <th className="px-3 py-2">Action</th>
-                  <th className="px-3 py-2">Code</th>
-                  <th className="px-3 py-2">Name</th>
-                  <th className="px-3 py-2">Unit</th>
-                  <th className="px-3 py-2">Pack</th>
-                </tr>
-              </thead>
-              <tbody>
-                {preview.sample.map((row) => (
-                  <tr key={row.row} className="border-t border-slate-100">
-                    <td className="px-3 py-2 capitalize text-slate-500">{row.action}</td>
-                    <td className="px-3 py-2 font-medium text-slate-800">{row.sku}</td>
-                    <td className="px-3 py-2 text-slate-700">{row.name}</td>
-                    <td className="px-3 py-2 text-slate-700">{row.defaultUnit}</td>
-                    <td className="px-3 py-2 text-slate-700">{row.packSize ?? "-"}{row.packUnit ? ` ${row.packUnit}` : ""}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {preview.validRows > preview.sample.length ? <p className="border-t border-slate-100 px-3 py-2 text-sm text-slate-500">Showing the first {preview.sample.length} valid rows.</p> : null}
+        <div>
+          <CompactTable headers={["Action", "Code", "Name", "Unit", "Pack"]}>
+            {preview.sample.map((row) => (
+              <CompactRow key={row.row}>
+                <CompactCell muted className="capitalize">{row.action}</CompactCell>
+                <CompactCell strong>{row.sku}</CompactCell>
+                <CompactCell>{row.name}</CompactCell>
+                <CompactCell>{row.defaultUnit}</CompactCell>
+                <CompactCell>{row.packSize ?? "-"}{row.packUnit ? ` ${row.packUnit}` : ""}</CompactCell>
+              </CompactRow>
+            ))}
+          </CompactTable>
+          {preview.validRows > preview.sample.length ? (
+            <p className="mt-2 text-sm text-fg-muted">Showing the first {preview.sample.length} products.</p>
+          ) : null}
         </div>
       ) : null}
     </div>

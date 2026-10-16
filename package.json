@@ -8,7 +8,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
     "@iconify/react": "^6.0.2",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.1",

@@ -1,59 +1,35 @@
 import type { ReactNode } from "react";
 
-export type FieldVariant = "default" | "dark";
+/** Shared look of every form control, so inputs, selects and text areas match. */
+export const fieldControlClasses =
+  "border-line-strong bg-surface text-fg placeholder:text-fg-placeholder focus:border-accent focus:ring-2 focus:ring-accent/30";
 
-export const fieldLabelClasses: Record<FieldVariant, string> = {
-  default: "text-slate-600",
-  dark: "text-slate-300",
-};
+export const fieldErrorClasses =
+  "border-danger focus:border-danger focus:ring-danger/30";
 
-export const fieldControlClasses: Record<FieldVariant, string> = {
-  default:
-    "border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:border-emerald-500",
-  dark: "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-emerald-500",
-};
-
-export const prefixIconClasses: Record<FieldVariant, string> = {
-  default: "text-slate-400",
-  dark: "text-slate-500",
-};
+export const prefixIconClasses = "text-fg-muted";
 
 export const FieldLabel = ({
   label,
   required,
-  variant,
   htmlFor,
 }: {
   label: string;
   required?: boolean;
-  variant: FieldVariant;
   htmlFor?: string;
 }) => (
-  <span className={`text-base font-medium ${fieldLabelClasses[variant]}`}>
+  <span className="text-sm font-semibold text-fg">
     <label htmlFor={htmlFor}>{label}</label>
-    {required ? <span className="text-red-500"> *</span> : null}
+    {required ? <span className="text-danger-text"> *</span> : null}
   </span>
 );
 
-export const FieldError = ({
-  id,
-  error,
-  variant = "default",
-}: {
-  id?: string;
-  error: string;
-  variant?: FieldVariant;
-}) => (
-  <p
-    id={id}
-    className={`text-sm ${variant === "dark" ? "text-red-400" : "text-red-500"}`}
-  >
+export const FieldError = ({ id, error }: { id?: string; error: string }) => (
+  <p id={id} role="alert" className="text-xs text-danger-text">
     {error}
   </p>
 );
 
 export const FieldHelp = ({ help }: { help: ReactNode }) => (
-  <p className="text-sm text-slate-400">{help}</p>
+  <p className="text-xs text-fg-muted">{help}</p>
 );
-
-export const fieldErrorClasses = "border-red-400 focus:border-red-500";

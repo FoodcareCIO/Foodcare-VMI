@@ -27,10 +27,10 @@ const columns: ColumnDef[] = [
   { key: "pack_unit", label: "Pack unit" },
   {
     key: "assigned_sites",
-    label: "Assigned sites",
+    label: "Used at sites",
     variant: "tags",
     sortable: false,
-    emptyText: "Not assigned",
+    emptyText: "Not used yet",
   },
 ];
 
@@ -41,13 +41,13 @@ export default function ProductsPage() {
     });
 
   if (initialLoading) return <LoadingPage label="Loading products..." />;
-  if (error && !data) return <EmptyState message="Could not load data. Please try again." />;
+  if (error && !data) return <EmptyState message="Could not load products. Please try again." />;
 
   return (
     <div>
       <PageHeader
         title="Products"
-        description="Add and edit the product catalogue. Each site's product list and minimum stock are managed on the site page."
+        description="Your product catalogue. To change which products a site stocks, open that site."
       />
       <EntityManager
         apiBase="/api/products"
@@ -63,7 +63,7 @@ export default function ProductsPage() {
         search={{
           value: search,
           onChange: setSearch,
-          placeholder: "Search products...",
+          placeholder: "Search products",
         }}
         pagination={
           data

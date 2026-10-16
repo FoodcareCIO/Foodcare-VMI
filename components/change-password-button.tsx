@@ -76,13 +76,13 @@ export const ChangePasswordButton = () => {
         variant="ghost"
         fullWidth
         icon="mdi:lock-reset"
-        className="justify-start px-3! py-2! font-normal! text-base! text-slate-300 hover:bg-slate-800! hover:text-white!"
+        className="justify-start text-fg!"
         onClick={() => setOpen(true)}
       >
         Change password
       </Button>
 
-      <Modal open={open} title="Change password" onClose={handleClose} size="sm">
+      <Modal open={open} title="Change your password" onClose={handleClose} size="sm">
         <form
           onSubmit={handleSubmit}
           onInput={() => setFieldErrors({})}
@@ -99,7 +99,7 @@ export const ChangePasswordButton = () => {
               setCurrentPassword(event.target.value);
               clearFieldError("currentPassword");
             }}
-            placeholder="Enter your current password"
+            placeholder="Your current password"
             error={fieldErrors.currentPassword}
             autoComplete="current-password"
           />
@@ -128,16 +128,16 @@ export const ChangePasswordButton = () => {
               setConfirmPassword(event.target.value);
               clearFieldError("confirmPassword");
             }}
-            placeholder="Re-enter your new password"
+            placeholder="Type the new password again"
             error={fieldErrors.confirmPassword}
             autoComplete="new-password"
           />
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={handleClose} disabled={pending}>
+            <Button type="button" variant="secondary" onClick={handleClose} disabled={pending}>
               Cancel
             </Button>
-            <Button type="submit" variant="secondary" loading={pending}>
+            <Button type="submit" loading={pending}>
               Update password
             </Button>
           </div>

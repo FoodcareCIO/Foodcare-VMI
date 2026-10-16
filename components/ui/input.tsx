@@ -14,11 +14,8 @@ import {
   fieldControlClasses,
   fieldErrorClasses,
   prefixIconClasses,
-  type FieldVariant,
 } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
-
-export type { FieldVariant };
 
 export interface InputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "prefix"> {
@@ -26,7 +23,6 @@ export interface InputProps
   prefixIcon?: string;
   error?: string;
   help?: string;
-  variant?: FieldVariant;
   wrapperClassName?: string;
 }
 
@@ -37,7 +33,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       prefixIcon,
       error,
       help,
-      variant = "default",
       type = "text",
       className = "",
       wrapperClassName = "",
@@ -54,22 +49,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const resolvedType = isPassword && showPassword ? "text" : type;
 
     return (
-      <div className={`flex flex-col gap-1 ${wrapperClassName}`}>
+      <div className={`flex flex-col gap-1.5 ${wrapperClassName}`}>
         {label ? (
-          <FieldLabel
-            label={label}
-            required={required}
-            variant={variant}
-            htmlFor={inputId}
-          />
+          <FieldLabel label={label} required={required} htmlFor={inputId} />
         ) : null}
 
         <div className="relative">
           {prefixIcon ? (
             <span
-              className={`pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 ${prefixIconClasses[variant]}`}
+              className={`pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 ${prefixIconClasses}`}
             >
-              <Icon icon={prefixIcon} width={18} height={18} />
+              <Icon icon={prefixIcon} />
             </span>
           ) : null}
 
@@ -81,30 +71,23 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? `${inputId}-error` : undefined}
-            className={`w-full rounded-lg border py-2 text-base outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${fieldControlClasses[variant]} ${prefixIcon ? "pl-10" : "px-3"} ${isPassword ? "pr-10" : prefixIcon ? "pr-3" : ""} ${error ? fieldErrorClasses : ""} ${className}`}
+            className={`h-10 w-full rounded-xl border text-base outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${fieldControlClasses} ${prefixIcon ? "pl-11" : "pl-3.5"} ${isPassword ? "pr-11" : "pr-3.5"} ${error ? fieldErrorClasses : ""} ${className}`}
             {...props}
           />
 
           {isPassword ? (
             <button
               type="button"
-              className={`absolute inset-y-0 right-0 flex cursor-pointer items-center px-2.5 ${prefixIconClasses[variant]} transition hover:opacity-80`}
+              className={`absolute inset-y-0 right-0 flex items-center rounded-r-xl px-3.5 ${prefixIconClasses} transition hover:text-fg`}
               aria-label={showPassword ? "Hide password" : "Show password"}
               onClick={() => setShowPassword((value) => !value)}
-              tabIndex={-1}
             >
-              <Icon
-                icon={showPassword ? "mdi:eye-off-outline" : "mdi:eye-outline"}
-                width={18}
-                height={18}
-              />
+              <Icon icon={showPassword ? "mdi:eye-off-outline" : "mdi:eye-outline"} />
             </button>
           ) : null}
         </div>
 
-        {error ? (
-          <FieldError id={`${inputId}-error`} error={error} variant={variant} />
-        ) : null}
+        {error ? <FieldError id={`${inputId}-error`} error={error} /> : null}
         {help && !error ? <FieldHelp help={help} /> : null}
       </div>
     );
@@ -117,7 +100,6 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
   label?: string;
   error?: string;
   help?: string;
-  variant?: FieldVariant;
   wrapperClassName?: string;
 }
 
@@ -125,7 +107,6 @@ export const Textarea = ({
   label,
   error,
   help,
-  variant = "default",
   className = "",
   wrapperClassName = "",
   id,
@@ -136,14 +117,9 @@ export const Textarea = ({
   const fieldId = id ?? props.name;
 
   return (
-    <div className={`flex flex-col gap-1 ${wrapperClassName}`}>
+    <div className={`flex flex-col gap-1.5 ${wrapperClassName}`}>
       {label ? (
-        <FieldLabel
-          label={label}
-          required={required}
-          variant={variant}
-          htmlFor={fieldId}
-        />
+        <FieldLabel label={label} required={required} htmlFor={fieldId} />
       ) : null}
       <textarea
         id={fieldId}
@@ -151,12 +127,10 @@ export const Textarea = ({
         disabled={disabled}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${fieldId}-error` : undefined}
-        className={`w-full rounded-lg border px-3 py-2 text-base outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${fieldControlClasses[variant]} ${error ? fieldErrorClasses : ""} ${className}`}
+        className={`w-full rounded-xl border px-3.5 py-2.5 text-base outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${fieldControlClasses} ${error ? fieldErrorClasses : ""} ${className}`}
         {...props}
       />
-      {error ? (
-        <FieldError id={`${fieldId}-error`} error={error} variant={variant} />
-      ) : null}
+      {error ? <FieldError id={`${fieldId}-error`} error={error} /> : null}
       {help && !error ? <FieldHelp help={help} /> : null}
     </div>
   );

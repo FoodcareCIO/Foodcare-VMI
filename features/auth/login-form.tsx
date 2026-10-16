@@ -75,7 +75,6 @@ export const LoginForm = () => {
         label="Email"
         name="email"
         type="email"
-        variant="dark"
         prefixIcon="mdi:email-outline"
         value={email}
         onChange={(event) => {
@@ -89,7 +88,6 @@ export const LoginForm = () => {
         label="Password"
         name="password"
         type="password"
-        variant="dark"
         prefixIcon="mdi:lock-outline"
         value={password}
         onChange={(event) => {
@@ -99,7 +97,7 @@ export const LoginForm = () => {
         placeholder="Enter your password"
         error={fieldErrors.password}
       />
-      <Button type="submit" variant="primary" fullWidth loading={busy} icon="mdi:login">
+      <Button type="submit" fullWidth size="lg" loading={busy}>
         Sign in
       </Button>
     </form>

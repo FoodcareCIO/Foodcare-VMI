@@ -6,19 +6,24 @@ import { useState, type ReactNode } from "react";
 import {
   Badge,
   Button,
+  Card,
   Checkbox,
   ConfirmModal,
-  Icon,
   Input,
+  LinkButton,
   Modal,
   Pagination,
   Select,
   SortableTableHeaderCell,
   Table,
   TableBodySection,
+  TableCell,
+  TableEmptyRow,
   TableHead,
   TableHeaderCell,
+  TableRow,
   TableSearch,
+  Tag,
   Textarea,
 } from "@/components/ui";
 import { api } from "@/lib/api/client";
@@ -108,7 +113,7 @@ const CellContent = ({ col, row }: { col: ColumnDef; row: Row }): ReactNode => {
       return (
         <Link
           href={buildHref(col.hrefTemplate ?? "", row)}
-          className="font-medium text-emerald-600 hover:text-emerald-700 cursor-pointer"
+          className="font-semibold text-primary-text hover:underline"
         >
           {formatCell(raw)}
         </Link>
@@ -121,12 +126,7 @@ const CellContent = ({ col, row }: { col: ColumnDef; row: Row }): ReactNode => {
       return (
         <div className="flex max-w-md flex-wrap gap-1.5">
           {tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-sky-50 px-2.5 py-1 text-sm font-medium text-sky-700 ring-1 ring-inset ring-sky-200"
-            >
-              {tag}
-            </span>
+            <Tag key={tag}>{tag}</Tag>
           ))}
         </div>
       );
@@ -135,7 +135,7 @@ const CellContent = ({ col, row }: { col: ColumnDef; row: Row }): ReactNode => {
       return raw ? (col.trueText ?? "Yes") : (col.emptyText ?? "-");
     case "truncate":
       return (
-        <span className="line-clamp-2 block max-w-md text-slate-600">
+        <span className="line-clamp-2 block max-w-md text-fg-muted">
           {formatCell(raw)}
         </span>
       );
@@ -196,7 +196,7 @@ export const EntityManager = ({
   deleteDescription,
   idKey = "id",
   createLabel = "Add new",
-  emptyMessage = "No records yet.",
+  emptyMessage = "Nothing here yet.",
   linkActions,
   rowActions,
   hiddenFields,
@@ -228,17 +228,13 @@ export const EntityManager = ({
         )}
         <div className="flex flex-wrap items-center gap-2">
           {toolbarActions}
-          <Button
-            variant="primary"
-            icon="mdi:plus"
-            onClick={() => setCreating(true)}
-          >
+          <Button icon="mdi:plus" onClick={() => setCreating(true)}>
             {createLabel}
           </Button>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <Card className="overflow-hidden">
         <TableBodySection loading={refreshing}>
           <Table>
             <TableHead>
@@ -270,50 +266,35 @@ export const EntityManager = ({
             </TableHead>
             <tbody>
               {rows.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={columnCount}
-                    className="px-6 py-12 text-center text-base text-slate-400"
-                  >
-                    {emptyMessage}
-                  </td>
-                </tr>
+                <TableEmptyRow colSpan={columnCount} message={emptyMessage} />
               ) : (
                 rows.map((row) => (
-                  <tr
-                    key={String(row[idKey])}
-                    className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
-                  >
+                  <TableRow key={String(row[idKey])}>
                     {columns.map((col) => (
-                      <td key={col.key} className="px-4 py-3 text-slate-700">
+                      <TableCell key={col.key}>
                         <CellContent col={col} row={row} />
-                      </td>
+                      </TableCell>
                     ))}
                     {(canUpdate || canDelete || linkActions?.length || rowActions) && (
-                      <td className="px-4 py-3">
+                      <TableCell>
                         <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                           {linkActions?.map((action) => (
-                            <Link
+                            <LinkButton
                               key={action.label}
                               href={buildHref(action.hrefTemplate, row)}
-                              className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-slate-300 px-2.5 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+                              variant="secondary"
+                              size="sm"
+                              icon={action.icon ?? "mdi:open-in-new"}
                             >
-                              <Icon
-                                icon={action.icon ?? "mdi:open-in-new"}
-                                width={14}
-                                height={14}
-                              />
                               {action.label}
-                            </Link>
+                            </LinkButton>
                           ))}
                           {rowActions?.(row)}
                           {canUpdate && (
                             <Button
-                              variant="outline"
+                              variant="secondary"
                               size="sm"
                               icon="mdi:pencil-outline"
-                              title="Edit"
-                              aria-label="Edit"
                               onClick={() => setEditingRow(row)}
                             >
                               Edit
@@ -331,9 +312,9 @@ export const EntityManager = ({
                             />
                           )}
                         </div>
-                      </td>
+                      </TableCell>
                     )}
-                  </tr>
+                  </TableRow>
                 ))
               )}
             </tbody>
@@ -350,7 +331,7 @@ export const EntityManager = ({
             busy={refreshing}
           />
         ) : null}
-      </div>
+      </Card>
 
       <Modal
         open={creating}
@@ -477,8 +458,8 @@ const ResourceForm = ({
         ))}
       </div>
 
-      <div>
-        <Button type="submit" variant="secondary" loading={pending}>
+      <div className="flex justify-end">
+        <Button type="submit" loading={pending}>
           {submitLabel}
         </Button>
       </div>
@@ -610,16 +591,9 @@ const DeleteButton = ({
     <>
       <Button
         type="button"
-        variant="outline"
+        variant={deleted ? "secondary" : "danger"}
         size="sm"
         icon={deleted ? "mdi:backup-restore" : "mdi:delete-outline"}
-        title={deleted ? "Restore" : "Delete"}
-        aria-label={deleted ? "Restore" : "Delete"}
-        className={
-          deleted
-            ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50!"
-            : "border-red-200 text-red-600 hover:bg-red-50! hover:text-red-700!"
-        }
         onClick={() => setOpen(true)}
       >
         {deleted ? "Restore" : "Delete"}
@@ -634,8 +608,8 @@ const DeleteButton = ({
         title={deleted ? "Restore this item?" : "Delete this item?"}
         description={
           deleted
-            ? "This will be restored and shown again in the mobile app."
-            : description ?? "This will be removed from the mobile app. Reps will no longer see it."
+            ? "Reps will see this in the app again."
+            : description ?? "Reps will no longer see this in the app."
         }
         confirmLabel={deleted ? "Restore" : "Delete"}
       />

@@ -46,14 +46,14 @@ export default function AdminsPage() {
       defaultSort: ADMIN_DEFAULT_SORT,
     });
 
-  if (initialLoading) return <LoadingPage label="Loading admins..." />;
-  if (error && !data) return <EmptyState message="Could not load data. Please try again." />;
+  if (initialLoading) return <LoadingPage label="Loading team..." />;
+  if (error && !data) return <EmptyState message="Could not load your team. Please try again." />;
 
   return (
     <div>
       <PageHeader
-        title="Dashboard access"
-        description="Manage who can sign in to this dashboard."
+        title="Team access"
+        description="Choose who can sign in to this dashboard."
       />
       <EntityManager
         apiBase="/api/admins"
@@ -61,15 +61,15 @@ export default function AdminsPage() {
         columns={columns}
         fields={fields}
         idKey="user_id"
-        createLabel="Add admin"
-        emptyMessage="No admins yet."
+        createLabel="Add team member"
+        emptyMessage="No team members yet."
         onMutate={reload}
         refreshing={refreshing}
         sort={{ column: sort, dir: sortDir, onChange: setSort }}
         search={{
           value: search,
           onChange: setSearch,
-          placeholder: "Search admins...",
+          placeholder: "Search team members",
         }}
         pagination={
           data

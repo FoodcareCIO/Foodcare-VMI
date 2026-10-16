@@ -18,7 +18,6 @@ import {
   fieldControlClasses,
   fieldErrorClasses,
   prefixIconClasses,
-  type FieldVariant,
 } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
 
@@ -47,7 +46,6 @@ export interface SelectProps
   prefixIcon?: string;
   error?: string;
   help?: string;
-  variant?: FieldVariant;
   wrapperClassName?: string;
   required?: boolean;
 }
@@ -76,11 +74,10 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       defaultValue = "",
       onChange,
       options: optionsInput,
-      placeholder = "Select...",
+      placeholder = "Choose one",
       prefixIcon,
       error,
       help,
-      variant = "default",
       wrapperClassName = "",
       className = "",
       id,
@@ -122,7 +119,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       if (!trigger) return;
 
       const rect = trigger.getBoundingClientRect();
-      const gap = 4;
+      const gap = 6;
       const estimatedItemHeight = 40;
       const menuPadding = 8;
       const maxMenuHeight = 240;
@@ -206,10 +203,10 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             width: menuStyle.width,
             zIndex: 60,
           }}
-          className="max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+          className="animate-pop-in max-h-60 overflow-y-auto rounded-xl border border-line bg-surface py-1 shadow-float"
         >
           {options.length === 0 ? (
-            <li className="px-3 py-2 text-base text-slate-400">No options</li>
+            <li className="px-3.5 py-2 text-base text-fg-muted">Nothing to choose from</li>
           ) : (
             options.map((option) => {
               const active = option.value === selectedValue;
@@ -218,16 +215,14 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
                   <button
                     type="button"
                     onClick={() => setValue(option.value)}
-                    className={`flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-base transition hover:bg-slate-50 ${
+                    className={`flex w-full items-center justify-between px-3.5 py-2 text-left text-base transition hover:bg-subtle ${
                       active
-                        ? "bg-emerald-50 font-medium text-emerald-700"
-                        : "text-slate-700"
+                        ? "bg-primary-soft font-semibold text-primary-text"
+                        : "text-fg"
                     }`}
                   >
                     <span>{option.label}</span>
-                    {active ? (
-                      <Icon icon="mdi:check" width={16} height={16} />
-                    ) : null}
+                    {active ? <Icon icon="mdi:check" size="sm" /> : null}
                   </button>
                 </li>
               );
@@ -237,7 +232,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       ) : null;
 
     return (
-      <div ref={rootRef} className={`flex flex-col gap-1 ${wrapperClassName}`}>
+      <div ref={rootRef} className={`flex flex-col gap-1.5 ${wrapperClassName}`}>
         {name ? (
           <input
             type="hidden"
@@ -248,12 +243,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         ) : null}
 
         {label ? (
-          <FieldLabel
-            label={label}
-            required={required}
-            variant={variant}
-            htmlFor={fieldId}
-          />
+          <FieldLabel label={label} required={required} htmlFor={fieldId} />
         ) : null}
 
         <div className="relative">
@@ -268,29 +258,27 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? `${fieldId}-error` : undefined}
             onClick={() => !disabled && setOpen((current) => !current)}
-            className={`flex w-full cursor-pointer items-center rounded-lg border py-2 text-left text-base outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${fieldControlClasses[variant]} ${prefixIcon ? "pl-10" : "pl-3"} pr-10 ${error ? fieldErrorClasses : ""} ${className}`}
+            className={`flex h-10 w-full items-center rounded-xl border text-left text-base outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${fieldControlClasses} ${prefixIcon ? "pl-11" : "pl-3.5"} pr-10 ${error ? fieldErrorClasses : ""} ${className}`}
             {...props}
           >
-            <span className={selectedOption ? "" : "text-slate-400"}>
+            <span className={`truncate ${selectedOption ? "" : "text-fg-placeholder"}`}>
               {selectedOption?.label ?? placeholder}
             </span>
           </button>
 
           {prefixIcon ? (
             <span
-              className={`pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 ${prefixIconClasses[variant]}`}
+              className={`pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 ${prefixIconClasses}`}
             >
-              <Icon icon={prefixIcon} width={18} height={18} />
+              <Icon icon={prefixIcon} />
             </span>
           ) : null}
 
           <span
-            className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 ${prefixIconClasses[variant]}`}
+            className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 ${prefixIconClasses}`}
           >
             <Icon
               icon="mdi:chevron-down"
-              width={18}
-              height={18}
               className={`transition ${open ? "rotate-180" : ""}`}
             />
           </span>
@@ -298,9 +286,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
 
         {dropdown && mounted ? createPortal(dropdown, document.body) : null}
 
-        {error ? (
-          <FieldError id={`${fieldId}-error`} error={error} variant={variant} />
-        ) : null}
+        {error ? <FieldError id={`${fieldId}-error`} error={error} /> : null}
         {help && !error ? <FieldHelp help={help} /> : null}
       </div>
     );

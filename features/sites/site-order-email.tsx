@@ -85,7 +85,7 @@ export function SiteOrderEmail({
         }}
         placeholder="manager@customer.com.au"
         error={error}
-        help="These people also get this site's orders. Put each address on a new line, or separate them with commas."
+        help="These people get the same order email as the main order email, at the same time. Put each address on a new line, or separate them with commas."
       />
       <div className="mt-3 flex justify-end">
         <Button loading={busy} disabled={!dirty} onClick={save}>

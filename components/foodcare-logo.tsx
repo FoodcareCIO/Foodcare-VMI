@@ -11,6 +11,6 @@ export const FoodcareLogo = ({
     alt="Foodcare"
     width={size}
     height={size}
-    className={`shrink-0 rounded-xl ${className}`}
+    className={`shrink-0 ${className}`}
   />
 );

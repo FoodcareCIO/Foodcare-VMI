@@ -104,7 +104,7 @@ function SiteSection({ title, subtitle, icon, actions, loading, error, children 
   return (
     <section className="mb-10">
       <SectionHeader title={title} icon={icon} description={subtitle} actions={actions} />
-      {loading ? <LoadingPage label={`Loading ${title.toLowerCase()}...`} /> : error ? <EmptyState message={`Could not load ${title.toLowerCase()}.`} /> : children}
+      {loading ? <LoadingPage compact label={`Loading ${title.toLowerCase()}...`} /> : error ? <EmptyState message={`Could not load ${title.toLowerCase()}.`} /> : children}
     </section>
   );
 }

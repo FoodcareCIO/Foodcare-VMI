@@ -21,7 +21,7 @@ export const FileInput = forwardRef<HTMLInputElement, FileInputProps>(
         id={id}
         type="file"
         onChange={(event) => onFile(event.target.files?.[0])}
-        className={`block w-full rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm text-fg file:mr-3 file:rounded-full file:border-0 file:bg-subtle file:px-4 file:py-1.5 file:text-sm file:font-semibold file:text-fg hover:file:bg-line disabled:opacity-60 ${className}`}
+        className={`block w-full rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm text-fg file:mr-3 file:rounded-full file:border-0 file:bg-subtle file:px-4 file:py-1.5 file:text-sm file:font-medium file:text-fg hover:file:bg-line disabled:opacity-60 ${className}`}
         {...props}
       />
       {help ? <FieldHelp help={help} /> : null}

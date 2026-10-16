@@ -16,6 +16,8 @@ It uses a **REST API layer** (`/app/api/*`) for all dashboard data. The browser 
 
 Run the tests with `node --test "tests/*.test.cjs"`.
 
+Icons are bundled with the app (nothing is downloaded at runtime). After using a new `mdi:...` icon, run `npm run build:icons` to add it to `lib/icons/mdi-subset.json`.
+
 ## Setup
 
 1. Install dependencies:

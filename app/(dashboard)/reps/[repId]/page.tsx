@@ -133,7 +133,10 @@ export default function RepAssignmentsPage({
             </TableHead>
             <tbody>
               {!data?.sites.length ? (
-                <TableEmptyRow colSpan={3} message="There are no sites to add yet." />
+                <TableEmptyRow
+                  colSpan={3}
+                  message={search ? `No sites match “${search}”.` : "There are no sites to add yet."}
+                />
               ) : (
                 data.sites.map((site) => (
                   <AssignmentTableRow

@@ -5,7 +5,7 @@ import type {
 } from "react";
 
 import { Icon } from "@/components/ui/icon";
-import { Loading } from "@/components/ui/loading";
+import { ThreeDots } from "@/components/ui/loading";
 import type { SortDir } from "@/lib/pagination";
 
 export const Table = ({
@@ -16,13 +16,10 @@ export const Table = ({
   className?: string;
 }) => <table className={`w-full text-base ${className}`}>{children}</table>;
 
+/** Blurs the table underneath and shows three bouncing dots while new rows load. */
 export const TableBodyOverlay = ({ label }: { label?: string }) => (
-  <div
-    className="animate-fade-in absolute inset-x-0 bottom-0 top-11 z-10 flex items-center justify-center bg-surface/75"
-    role="status"
-    aria-live="polite"
-  >
-    <Loading size="md" label={label ?? "Loading..."} />
+  <div className="animate-fade-in absolute inset-0 z-10 flex items-center justify-center bg-surface/40 backdrop-blur-[3px]">
+    <ThreeDots label={label ?? "Loading"} />
   </div>
 );
 
@@ -44,7 +41,7 @@ export const TableBodySection = ({
 
 export const TableHead = ({ children }: { children: ReactNode }) => (
   <thead>
-    <tr className="border-b border-line bg-subtle text-left text-sm font-semibold text-fg-muted">
+    <tr className="border-b border-line bg-subtle text-left text-sm font-medium text-fg-muted">
       {children}
     </tr>
   </thead>
@@ -55,7 +52,7 @@ export const TableHeaderCell = ({
   className = "",
   ...props
 }: ThHTMLAttributes<HTMLTableCellElement>) => (
-  <th className={`whitespace-nowrap px-4 py-3 font-semibold ${className}`} {...props}>
+  <th className={`whitespace-nowrap px-4 py-3 font-medium ${className}`} {...props}>
     {children}
   </th>
 );
@@ -87,7 +84,7 @@ export const SortableTableHeaderCell = ({
       <button
         type="button"
         onClick={() => onSort(sortKey)}
-        className={`inline-flex items-center gap-1.5 rounded-md text-left font-semibold transition hover:text-fg ${isActive ? "text-fg" : ""}`}
+        className={`inline-flex items-center gap-1.5 rounded-md text-left font-medium transition hover:text-fg ${isActive ? "text-fg" : ""}`}
       >
         <span>{children}</span>
         <Icon
@@ -136,7 +133,7 @@ export const TableCell = ({
   nowrap?: boolean;
 }) => (
   <td
-    className={`px-4 py-3 ${nowrap ? "whitespace-nowrap" : ""} ${strong ? "font-semibold text-fg" : muted ? "text-fg-muted" : "text-fg"} ${className}`}
+    className={`px-4 py-3 ${nowrap ? "whitespace-nowrap" : ""} ${strong ? "font-medium text-fg" : muted ? "text-fg-muted" : "text-fg"} ${className}`}
     {...props}
   >
     {children}
@@ -173,7 +170,7 @@ export const CompactTable = ({
       <thead className="sticky top-0 bg-subtle text-fg-muted">
         <tr>
           {headers.map((header, index) => (
-            <th key={`${header}-${index}`} className="px-3 py-2 font-semibold">
+            <th key={`${header}-${index}`} className="px-3 py-2 font-medium">
               {header}
             </th>
           ))}
@@ -200,7 +197,7 @@ export const CompactCell = ({
   className?: string;
 }) => (
   <td
-    className={`px-3 py-2 ${strong ? "font-semibold text-fg" : muted ? "text-fg-muted" : "text-fg"} ${className}`}
+    className={`px-3 py-2 ${strong ? "font-medium text-fg" : muted ? "text-fg-muted" : "text-fg"} ${className}`}
   >
     {children}
   </td>

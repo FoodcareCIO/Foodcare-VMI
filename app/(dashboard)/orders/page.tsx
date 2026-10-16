@@ -83,7 +83,7 @@ export default function OrdersPage() {
         <TableSearch
           value={search}
           onChange={setSearch}
-          placeholder="Search orders"
+          placeholder="Search by site, rep or status"
           disabled={refreshing}
         />
         <div className="w-48">
@@ -146,7 +146,13 @@ export default function OrdersPage() {
               {orders.length === 0 ? (
                 <TableEmptyRow
                   colSpan={7}
-                  message={emailFilter ? "No orders need attention." : "No orders yet."}
+                  message={
+                    search
+                      ? `No orders match “${search}”. Try a site, a sales rep, or a status such as “Submitted”.`
+                      : emailFilter
+                        ? "No orders need attention."
+                        : "No orders yet."
+                  }
                 />
               ) : (
                 orders.map((order) => {
@@ -209,7 +215,7 @@ function PhotoCount({ expected, received }: { expected: number | null; received:
   const missing = received < expected;
   return (
     <span
-      className={missing ? "font-semibold text-warning-text" : "text-fg-muted"}
+      className={missing ? "font-medium text-warning-text" : "text-fg-muted"}
       title={missing ? `${expected - received} photo(s) not received yet` : undefined}
     >
       {received}/{expected}

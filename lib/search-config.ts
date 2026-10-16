@@ -44,10 +44,24 @@ export const adminSearch: SearchConfig = {
   ],
 };
 
+// `status` is a Postgres enum, so it is matched by the words shown in the
+// Orders table (see statusLabels in components/ui/layout.tsx), never with ILIKE.
 export const orderSearch: SearchConfig = {
-  columns: ["status"],
+  columns: [],
+  labels: [
+    {
+      column: "status",
+      labels: { draft: "In progress", completed: "Submitted", rejected: "Rejected" },
+    },
+  ],
   relations: [
     { table: "customer_sites", fkColumn: "site_id", columns: ["name"] },
+    {
+      table: "users",
+      columns: ["display_name", "email"],
+      via: { table: "sales_reps", column: "user_id" },
+      fkColumn: "sales_rep_id",
+    },
   ],
 };
 

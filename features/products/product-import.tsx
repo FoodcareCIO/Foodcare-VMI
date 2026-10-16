@@ -128,7 +128,7 @@ export function ProductImport({ onImported }: { onImported: () => void | Promise
               </p>
               <p className="mt-2">
                 To change the products at one site, open{" "}
-                <Link href="/sites" className="font-semibold text-primary-text hover:underline">
+                <Link href="/sites" className="font-medium text-primary-text hover:underline">
                   Sites
                 </Link>
                 , choose the site, then choose <strong>Upload product list</strong>.

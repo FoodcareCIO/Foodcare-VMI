@@ -31,7 +31,7 @@ export function OrderPhotos({
         icon="mdi:image-multiple-outline"
         actions={
           photos.length > 0 || missing > 0 ? (
-            <span className={`text-sm ${missing > 0 ? "font-semibold text-warning-text" : "text-fg-muted"}`}>
+            <span className={`text-sm ${missing > 0 ? "font-medium text-warning-text" : "text-fg-muted"}`}>
               {heading}
             </span>
           ) : null
@@ -64,7 +64,7 @@ export function OrderPhotos({
                 className="flex h-36 flex-col items-center justify-center gap-2 rounded-xl border border-line bg-subtle text-fg-muted transition hover:border-accent hover:text-primary-text"
               >
                 <Icon icon="mdi:file-pdf-box" size="xl" />
-                <span className="text-sm font-semibold">PDF {index + 1}</span>
+                <span className="text-sm font-medium">PDF {index + 1}</span>
               </a>
             ) : (
               <a

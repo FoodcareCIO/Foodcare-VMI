@@ -15,7 +15,7 @@ export const BackLink = ({
 }) => (
   <Link
     href={href}
-    className="-ml-2 mb-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm font-semibold text-primary-text transition hover:bg-primary-soft"
+    className="-ml-2 mb-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm font-medium text-primary-text transition hover:bg-primary-soft"
   >
     <Icon icon="mdi:arrow-left" size="sm" />
     {children}
@@ -118,7 +118,7 @@ export const StatCard = ({
       <div className="min-w-0 flex-1">
         <p className="text-sm text-fg-muted">{label}</p>
         <div
-          className={`mt-0.5 text-fg ${compact ? "text-subhead font-semibold" : "text-2xl font-bold"}`}
+          className={`mt-0.5 text-fg ${compact ? "text-subhead font-medium" : "text-2xl font-semibold"}`}
         >
           {value}
         </div>
@@ -160,7 +160,7 @@ export const EmptyState = ({
         <Icon icon={icon} size="lg" />
       </span>
     ) : null}
-    {title ? <p className="text-subhead font-semibold text-fg">{title}</p> : null}
+    {title ? <p className="text-subhead font-medium text-fg">{title}</p> : null}
     <p className="max-w-md text-base text-fg-muted">{message}</p>
     {action ? <div className="mt-2">{action}</div> : null}
   </div>
@@ -196,7 +196,7 @@ export const Alert = ({
   >
     <Icon icon={icon ?? alertTones[tone].icon} size="lg" className="mt-px shrink-0" />
     <div className="min-w-0 flex-1 basis-48 text-base">
-      {title ? <p className="font-semibold">{title}</p> : null}
+      {title ? <p className="font-medium">{title}</p> : null}
       {children ? <div className={title ? "mt-0.5" : ""}>{children}</div> : null}
     </div>
     {/* On narrow screens the button drops under the message, lined up with the text. */}
@@ -271,7 +271,7 @@ export const Badge = ({
   const label = labelOverride ?? statusLabels[value] ?? value.replaceAll("_", " ");
   return (
     <span
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold ${resolved.pill}`}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${resolved.pill}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${resolved.dot}`} aria-hidden />
       <span className="first-letter:uppercase">{label}</span>
@@ -281,7 +281,7 @@ export const Badge = ({
 
 /** A small label without a status dot, such as a site name chip. */
 export const Tag = ({ children }: { children: ReactNode }) => (
-  <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-semibold text-primary-text">
+  <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary-text">
     {children}
   </span>
 );
@@ -324,7 +324,7 @@ export const StatTile = ({
   tone?: Tone;
 }) => (
   <div className="rounded-xl border border-line p-3 text-center">
-    <div className={`text-xl font-bold ${statTileTones[tone]}`}>{value}</div>
+    <div className={`text-xl font-semibold ${statTileTones[tone]}`}>{value}</div>
     <div className="text-sm text-fg-muted">{label}</div>
   </div>
 );
